@@ -8,7 +8,13 @@ using Microsoft.Xna.Framework;
 using MoonSharp.Interpreter;
 using DSSIFactionCraft.Items.Components;
 
+#if CLIENT
 [assembly: IgnoresAccessChecksTo("Barotrauma")]
+#endif
+#if SERVER
+[assembly: IgnoresAccessChecksTo("DedicatedServer")]
+#endif
+[assembly: IgnoresAccessChecksTo("BarotraumaCore")]
 
 namespace DSSIFactionCraft
 {
