@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<prefabs>
+  <structure identifier="dfc_blocker" category="Misc" subcategory="dfc" spritecolor="0,0,0,255" width="96" height="96" resizehorizontal="true" resizevertical="true" body="true" castshadow="true">
+    <sprite texture="%ModDir%/DFC/UI/white.png" sourcerect="0,0,64,64" depth="0.6" origin="0.5,0.5" />
+  </structure>
+  <structure identifier="dfc_platform" category="Misc" subcategory="dfc" spritecolor="0,0,0,255" width="96" height="96" resizehorizontal="true" resizevertical="true" body="true" allowattachitems="true" platform="true">
+    <sprite texture="%ModDir%/DFC/UI/white.png" sourcerect="0,0,64,64" depth="0.6" origin="0.5,0.5" />
+  </structure>
+  <structure identifier="dfc_whiteback" category="Misc" subcategory="dfc" spritecolor="255,255,255,255" width="96" height="96" resizehorizontal="true" resizevertical="true" allowattachitems="true">
+    <sprite texture="%ModDir%/DFC/UI/white.png" sourcerect="0,0,64,64" depth="0.9" origin="0.5,0.5" />
+  </structure>
+</prefabs>

@@ -1,0 +1,270 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Items>
+  <Item name="DFC Template" identifier="dfc_template" category="Misc" subcategory="dfc" tags="dfc_mapdevtool" allowedlinks="structure,item" spritecolor="0.1,0.1,0.1,0.7" linkable="true" resizehorizontal="true" resizevertical="true">
+    <Sprite texture="Content/Items/Labels/labels.png" depth="0.850" sourcerect="4,100,28,24" />
+    <ItemLabel text="DFC Template" ignorelocalization="true" textscale="0.75" textcolor="255,255,255,255" />
+  </Item>
+  <Item name="DFC Initializer" identifier="dfc_initializer" variantof="dfc_template" spritecolor="0.0,0.0,0.0,1.0">
+    <ItemLabel text="DFC Initializer" />
+    <DfcInitializer />
+  </Item>
+  <Item name="DFC New SpawnPointSet" identifier="dfc_newspawnpointset" variantof="dfc_template" spritecolor="0.0,0.0,0.0,1.0">
+    <ItemLabel text="DFC New SpawnPointSet" />
+    <DfcNewSpawnPointSet />
+  </Item>
+  <Item name="DFC New Faction" identifier="dfc_newfaction" variantof="dfc_template" spritecolor="0.0,0.0,0.0,1.0">
+    <ItemLabel text="DFC New Faction" />
+    <DfcNewFaction />
+  </Item>
+  <Item name="DFC New Job" identifier="dfc_newjob" variantof="dfc_template" spritecolor="0.0,0.0,0.0,1.0">
+    <ItemLabel text="DFC New Job" />
+    <DfcNewJob />
+  </Item>
+  <Item name="DFC New Gear" identifier="dfc_newgear" variantof="dfc_template" spritecolor="0.0,0.0,0.0,1.0">
+    <ItemLabel text="DFC New Gear" />
+    <DfcNewGear />
+  </Item>
+  <Item name="DFC Allow Respawn" identifier="dfc_allowrespawn" variantof="dfc_template" spritecolor="0.0,0.0,0.0,1.0">
+    <ItemLabel text="DFC Allow Respawn" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="signal_in" displayname="connection.signalin" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcAllowRespawn />
+  </Item>
+  <Item name="DFC Add Or Remove Job" identifier="dfc_addorremovejob" variantof="dfc_template" spritecolor="0.0,0.0,0.0,1.0">
+    <ItemLabel text="DFC Add Or Remove Job" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="signal_in" displayname="connection.signalin" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcAddOrRemoveJob />
+  </Item>
+  <Item name="DFC Add Or Remove Gear" identifier="dfc_addorremovegear" variantof="dfc_template" spritecolor="0.0,0.0,0.0,1.0">
+    <ItemLabel text="DFC Add Or Remove Gear" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="signal_in" displayname="connection.signalin" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcAddOrRemoveGear />
+  </Item>
+  <Item name="DFC Region+" identifier="dfc_regionincluded" variantof="dfc_template" spritecolor="0.1,0.1,0.5,0.2" noninteractable="true">
+    <Sprite depth="+0.01" />
+    <ItemLabel text="DFC Region+" />
+  </Item>
+  <Item name="DFC Region-" identifier="dfc_regionexcluded" variantof="dfc_template" spritecolor="0.2,0.2,0.2,0.2" noninteractable="true">
+    <Sprite depth="+0.005" />
+    <ItemLabel text="DFC Region-" />
+  </Item>
+  <Item name="DFC Data Getter" identifier="dfc_datagetter" variantof="dfc_template" spritecolor="1.0,0.5,0.0,0.7">
+    <ItemLabel text="DFC Data Getter" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="get_data" displayname="connection.getdata" />
+      <input name="set_index" displayname="connection.setindex" />
+      <output name="signal_out" displayname="connection.signalout" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcDataGetter />
+  </Item>
+  <Item name="DFC Data Setter" identifier="dfc_datasetter" variantof="dfc_template" spritecolor="1.0,0.5,0.0,0.7">
+    <ItemLabel text="DFC Data Setter" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="set_data" displayname="connection.setdata" />
+      <input name="set_index" displayname="connection.setindex" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcDataSetter />
+  </Item>
+  <Item name="DFC Telepoter" identifier="dfc_teleporter" variantof="dfc_template" spritecolor="0.1,0.2,0.1,0.7">
+    <ItemLabel text="DFC Telepoter" />
+    <Controller direction="None" canbepicked="true" msg="ItemMsgPressSelect">
+      <RequiredItem identifier="idcard" type="Picked" msg="ItemMsgUnauthorizedAccess" />
+      <sound file="Content/Items/Button/Button.ogg" type="OnUse" range="500.0" />
+    </Controller>
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="signal_in" displayname="connection.signalin" />
+      <input name="toggle" displayname="connection.togglestate" />
+      <input name="set_state" displayname="connection.setstate" />
+      <output name="signal_out" displayname="connection.signalout" />
+    </ConnectionPanel>
+    <DfcTeleporter />
+  </Item>
+  <Item name="DFC Character Checker" identifier="dfc_characterchecker" variantof="dfc_template">
+    <ItemLabel text="DFC Character Checker" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="signal_in" displayname="connection.signalin" />
+      <output name="signal_out" displayname="connection.signalout" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcCharacterChecker />
+  </Item>
+  <Item name="DFC Character Single Checker" identifier="dfc_charactersinglechecker" variantof="dfc_template">
+    <ItemLabel text="DFC Character Single Checker" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="signal_in" displayname="connection.signalin" />
+      <output name="signal_out" displayname="connection.signalout" />
+      <output name="output_guid" />
+      <output name="output_name" />
+      <output name="output_speciesname" />
+      <output name="output_group" />
+      <output name="output_tags" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcCharacterSingleChecker />
+  </Item>
+  <Item name="DFC Action EndGame" identifier="dfc_actionendgame" variantof="dfc_template" spritecolor="0.65,0.1,0.1,0.7">
+    <ItemLabel text="DFC Action EndGame" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="signal_in" displayname="connection.signalin" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcActionEndGame />
+  </Item>
+  <Item name="DFC Action SendChatMessage" identifier="dfc_actionsendchatmessage" variantof="dfc_template" spritecolor="0.65,0.1,0.1,0.7">
+    <ItemLabel text="DFC Action SendChatMessage" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="signal_in" displayname="connection.signalin" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcActionSendChatMessage />
+  </Item>
+  <Item name="DFC Event CharacterDeath" identifier="dfc_eventcharacterdeath" variantof="dfc_template" spritecolor="0.1,0.1,0.65,0.7">
+    <ItemLabel text="DFC Event CharacterDeath" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <output name="output_dead_guid" />
+      <output name="output_dead_name" />
+      <output name="output_dead_speciesname" />
+      <output name="output_dead_group" />
+      <output name="output_dead_tags" />
+      <output name="output_killer_guid" />
+      <output name="output_killer_name" />
+      <output name="output_killer_speciesname" />
+      <output name="output_killer_group" />
+      <output name="output_killer_tags" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcEventCharacterDeath />
+  </Item>
+  <Item name="DFC Event EnterLeaveRegion" identifier="dfc_evententerleaveregion" variantof="dfc_template" spritecolor="0.1,0.1,0.65,0.7">
+    <ItemLabel text="DFC Event EnterLeaveRegion" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="toggle" displayname="connection.togglestate" />
+      <input name="set_state" displayname="connection.setstate" />
+      <output name="output_guid" />
+      <output name="output_name" />
+      <output name="output_speciesname" />
+      <output name="output_group" />
+      <output name="output_tags" />
+      <output name="output_entered" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcEventEnterLeaveRegion />
+  </Item>
+  <Item name="DFC Character Responder" identifier="dfc_characterresponder" variantof="dfc_template">
+    <ItemLabel text="DFC Character Responder" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="signal_in" displayname="connection.signalin" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DFCCharacterResponder />
+  </Item>
+  <Item name="DFC Character Cleaner" identifier="dfc_charactercleaner" variantof="dfc_template">
+    <ItemLabel text="DFC Character Cleaner" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="signal_in" displayname="connection.signalin" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcCharacterCleaner />
+  </Item>
+  <Item name="DFC Item Cleaner" identifier="dfc_itemcleaner" variantof="dfc_template" spritecolor="0.1,0.5,0.5,0.7">
+    <ItemLabel text="DFC Item Cleaner" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="signal_in" displayname="connection.signalin" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcItemCleaner />
+  </Item>
+  <Item name="DFC Item Builder" identifier="dfc_itembuilder" variantof="dfc_template" spritecolor="0.1,0.5,0.5,0.7">
+    <ItemLabel text="DFC Item Builder" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="signal_in" displayname="connection.signalin" />
+      <input name="toggle" displayname="connection.togglestate" />
+      <input name="set_state" displayname="connection.setstate" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcItemBuilder />
+  </Item>
+  <Item name="DFC Item Batch" identifier="dfc_itembatch" variantof="dfc_template" spritecolor="0.1,0.5,0.5,0.7">
+    <ItemLabel text="DFC Item Batch" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem identifier="screwdriver" type="Equipped" />
+      <input name="signal_in" displayname="connection.signalin" />
+      <input name="toggle" displayname="connection.togglestate" />
+      <input name="set_state" displayname="connection.setstate" />
+    </ConnectionPanel>
+    <ItemComponent isactive="false" />
+    <DfcItemBatch />
+  </Item>
+  <Item name="Dfc Script Wearable Dyeing" identifier="dfc_scriptwearabledyeing" variantof="dfc_template" spritecolor="0.7,1.0,1.0,0.7">
+    <ItemLabel text="Dfc Script Wearable Dyeing" />
+    <DfcScriptWearableDyeing />
+  </Item>
+  <Item name="Dfc Script Wifi Initializer" identifier="dfc_scriptwifiinitializer" variantof="dfc_template" spritecolor="0.7,1.0,1.0,0.7">
+    <ItemLabel text="Dfc Script Wifi Initializer" />
+    <DfcScriptWifiInitializer />
+  </Item>
+  <Item name="Dfc Script Submarine Locker" identifier="dfc_scriptsubmarinelocker" variantof="dfc_template" spritecolor="0.7,1.0,1.0,0.7">
+    <ItemLabel text="Dfc Script Submarine Locker" />
+    <DfcScriptSubmarineLocker />
+  </Item>
+  <Item name="Dfc Vanilla Entity Spawner Component" identifier="dfc_vanillaentityspawnercomponent" category="Misc" subcategory="dfc" tags="smallitem,dfc_mapdevtool" cargocontaineridentifier="metalcrate" scale="0.5" spritecolor="1.0,0.65,0.0,1.0" inventoryiconcolor="1.0,0.6,0.0,1.0" impactsoundtag="impact_metal_light" isshootable="true">
+    <Sprite texture="Content/Items/Labels/labels.png" depth="0.850" sourcerect="4,100,28,24" />
+    <ItemLabel text="VES" ignorelocalization="true" textscale="0.5" textcolor="255,255,255,255" />
+    <Body width="32" height="24" density="30" />
+    <Holdable selectkey="Select" pickkey="Use" aimpos="65,-10" handle1="0,0" attachable="true" aimable="true" PickingTime="5.0" slots="Any,RightHand,LeftHand" msg="ItemMsgDetachWrench">
+      <RequiredItem items="wrench" type="Equipped" />
+    </Holdable>
+    <EntitySpawnerComponent OnlySpawnWhenCrewInRange="false" SpawnAreaBounds="50,50" MaximumAmountRangePadding="0" SpawnTimerRange="-1,-1" SpawnAmountRange="1,1" MaximumAmount="0" MaximumAmountInArea="0" PreloadCharacter="true" />
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem items="screwdriver" type="Equipped" />
+      <input name="set_state" displayname="connection.setstate" />
+      <input name="toggle" displayname="connection.togglestate" />
+      <input name="trigger_in" displayname="connection.turrettriggerin" />
+      <output name="state_out" displayname="connection.stateout" fallbackdisplayname="connection.signalout" />
+    </ConnectionPanel>
+  </Item>
+</Items>

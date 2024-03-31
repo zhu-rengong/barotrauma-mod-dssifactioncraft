@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<contentpackage name="DSSI Faction Craft" modversion="2.82" corepackage="False" steamworkshopid="3026984689" gameversion="1.2.8.0">
+  <Item file="%ModDir%/DFC/MapDevTools/lights.xml" />
+  <Item file="%ModDir%/DFC/MapDevTools/tools.xml" />
+  <Item file="%ModDir%/DFC/MapDevTools/luacomponent.xml" />
+  <Structure file="%ModDir%/DFC/Map/StructurePrefabs.xml" />
+  <Text file="%ModDir%/DFC/Texts/English.xml" />
+  <Text file="%ModDir%/DFC/Texts/SimplifiedChinese.xml" />
+</contentpackage>

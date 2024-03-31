@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>DSSI&lpar;Dynamic Submarine Script Injector&rpar; Faction Craft &#x6d3e;&#x7cfb;&#x5de5;&#x827a; &lpar;Abbreviation&colon;DFC&rpar; v0&period;1</title>
+        <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <h1 id="dssidynamic-submarine-script-injector-faction-craft-派系工艺-abbreviationdfc-v01">DSSI(Dynamic Submarine Script Injector) Faction Craft 派系工艺 (Abbreviation:DFC) v0.1</h1>
+<ul>
+<li><a href="#dssidynamic-submarine-script-injector-faction-craft-%E6%B4%BE%E7%B3%BB%E5%B7%A5%E8%89%BA-abbreviationdfc-v01">DSSI(Dynamic Submarine Script Injector) Faction Craft 派系工艺 (Abbreviation:DFC) v0.1</a>
+<ul>
+<li><a href="#%E7%AE%80%E4%BB%8B">简介</a></li>
+<li><a href="#%E9%87%8D%E7%94%9F%E7%B3%BB%E7%BB%9F">重生系统</a></li>
+<li><a href="#%E5%88%9D%E5%A7%8B%E5%8C%96">初始化</a>
+<ul>
+<li><a href="#%E5%86%85%E9%83%A8%E7%BC%96%E8%BE%91%E5%99%A8%E5%B7%A5%E5%85%B7%E5%AE%9E%E7%8E%B0%E5%8F%AF%E9%80%89%E6%8E%A8%E8%8D%90">内部编辑器工具实现(可选,推荐)</a></li>
+</ul>
+</li>
+<li><a href="#%E5%B7%A5%E5%85%B7">工具</a>
+<ul>
+<li><a href="#-%E5%88%9D%E5%A7%8B%E5%8C%96%E5%99%A8dfc_initializer-c%E7%BB%84%E4%BB%B6dfcinitializer">☑ 初始化器(dfc_initializer) C#组件(DfcInitializer)</a></li>
+<li><a href="#-%E6%96%B0%E5%A2%9E%E5%87%BA%E7%94%9F%E5%8C%BAdfc_newspawnpointset-c%E7%BB%84%E4%BB%B6dfcnewspawnpointset">☑ 新增出生区(dfc_newspawnpointset) C#组件(DfcNewSpawnPointSet)</a></li>
+<li><a href="#-%E6%96%B0%E5%A2%9E%E6%B4%BE%E7%B3%BBdfc_newfaction-c%E7%BB%84%E4%BB%B6dfcnewfaction">☑ 新增派系(dfc_newfaction) C#组件(DfcNewFaction)</a></li>
+<li><a href="#-%E6%96%B0%E5%A2%9E%E8%81%8C%E4%B8%9Adfc_newjob-c%E7%BB%84%E4%BB%B6dfcnewjob">☑ 新增职业(dfc_newjob) C#组件(DfcNewJob)</a></li>
+<li><a href="#-%E6%96%B0%E5%A2%9E%E8%A3%85%E5%A4%87dfc_newgear-c%E7%BB%84%E4%BB%B6dfcnewgear">☑ 新增装备(dfc_newgear) C#组件(DfcNewGear)</a></li>
+<li><a href="#-%E5%85%81%E8%AE%B8%E6%B4%BE%E7%B3%BB%E9%87%8D%E7%94%9Fdfc_allowrespawn-c%E7%BB%84%E4%BB%B6dfcallowrespawn">☑ 允许派系重生(dfc_allowrespawn) C#组件(DfcAllowRespawn)</a></li>
+<li><a href="#-%E6%B7%BB%E5%8A%A0%E6%88%96%E7%A7%BB%E9%99%A4%E8%81%8C%E4%B8%9Adfc_addorremovejob-c%E7%BB%84%E4%BB%B6dfcaddorremovejob">☑ 添加或移除职业(dfc_addorremovejob) C#组件(DfcAddOrRemoveJob)</a></li>
+<li><a href="#-%E6%B7%BB%E5%8A%A0%E6%88%96%E7%A7%BB%E9%99%A4%E8%A3%85%E5%A4%87dfc_addorremovegear-c%E7%BB%84%E4%BB%B6dfcaddorremovegear">☑ 添加或移除装备(dfc_addorremovegear) C#组件(DfcAddOrRemoveGear)</a></li>
+<li><a href="#-lua%E7%BB%84%E4%BB%B6dfc_luacomponent-c%E7%BB%84%E4%BB%B6dfcluacomponent">☑ Lua组件(dfc_luacomponent) C#组件(DfcLuaComponent)</a></li>
+<li><a href="#-%E4%BC%A0%E9%80%81%E7%82%B9dfc_teleporter-c%E7%BB%84%E4%BB%B6dfcteleporter">☑ 传送点(dfc_teleporter) C#组件(DfcTeleporter)</a></li>
+<li><a href="#-%E6%95%B0%E6%8D%AE%E8%8E%B7%E5%8F%96%E5%99%A8dfc_datagetter-c%E7%BB%84%E4%BB%B6dfcdatagetter">☑ 数据获取器(dfc_datagetter) C#组件(DfcDataGetter)</a></li>
+<li><a href="#-%E6%95%B0%E6%8D%AE%E8%AE%BE%E7%BD%AE%E5%99%A8dfc_datasetter-c%E7%BB%84%E4%BB%B6dfcdatasetter">☑ 数据设置器(dfc_datasetter) C#组件(DfcDataSetter)</a></li>
+<li><a href="#-%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionincluded">☑ 包含区域(dfc_regionincluded)</a></li>
+<li><a href="#-%E4%B8%8D%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionexcluded">☑ 不包含区域(dfc_regionexcluded)</a></li>
+<li><a href="#-%E8%A7%92%E8%89%B2%E6%A3%80%E6%B5%8B%E5%99%A8dfc_characterchecker-c%E7%BB%84%E4%BB%B6dfccharacterchecker">☑ 角色检测器(dfc_characterchecker) C#组件(DfcCharacterChecker)</a></li>
+<li><a href="#-%E8%A7%92%E8%89%B2%E6%A3%80%E6%9F%A5%E5%99%A8%E5%8D%95%E4%B8%AAdfc_charactersinglechecker-c%E7%BB%84%E4%BB%B6dfccharactersinglechecker">☑ 角色检查器(单个)(dfc_charactersinglechecker) C#组件(DfcCharacterSingleChecker)</a></li>
+<li><a href="#-%E5%8A%A8%E4%BD%9C-%E7%BB%93%E6%9D%9F%E6%B8%B8%E6%88%8Fdfc_actionendgame-c%E7%BB%84%E4%BB%B6dfcactionendgame">☑ 动作† 结束游戏(dfc_actionendgame) C#组件(DfcActionEndGame)</a></li>
+<li><a href="#-%E5%8A%A8%E4%BD%9C-%E5%8F%91%E9%80%81%E8%81%8A%E5%A4%A9%E6%B6%88%E6%81%AFdfc_actionsendchatmessage-c%E7%BB%84%E4%BB%B6dfcactionsendchatmessage">☑ 动作† 发送聊天消息(dfc_actionsendchatmessage) C#组件(DfcActionSendChatMessage)</a></li>
+<li><a href="#-%E4%BA%8B%E4%BB%B6-%E8%BF%9B%E5%87%BA%E5%8C%BA%E5%9F%9Fdfc_evententerleaveregion-c%E7%BB%84%E4%BB%B6dfcevententerleaveregion">☑ 事件☇ 进出区域(dfc_evententerleaveregion) C#组件(DfcEventEnterLeaveRegion)</a></li>
+<li><a href="#-%E4%BA%8B%E4%BB%B6-%E6%AD%BB%E4%BA%A1dfc_eventcharacterdeath-c%E7%BB%84%E4%BB%B6dfceventcharacterdeath">☑ 事件☇ 死亡(dfc_eventcharacterdeath) C#组件(DfcEventCharacterDeath)</a></li>
+<li><a href="#-%E8%A7%92%E8%89%B2%E6%B8%85%E9%99%A4%E5%99%A8dfc_charactercleaner-c%E7%BB%84%E4%BB%B6dfccharactercleaner">☑ 角色清除器(dfc_charactercleaner) C#组件(DfcCharacterCleaner)</a></li>
+<li><a href="#-%E7%89%A9%E5%93%81%E6%B8%85%E9%99%A4%E5%99%A8dfc_itemcleaner-c%E7%BB%84%E4%BB%B6dfcitemcleaner">☑ 物品清除器(dfc_itemcleaner) C#组件(DfcItemCleaner)</a></li>
+<li><a href="#-%E7%89%A9%E5%93%81%E7%94%9F%E6%88%90%E5%99%A8dfc_itembuilder-c%E7%BB%84%E4%BB%B6dfcitembuilder">☑ 物品生成器(dfc_itembuilder) C#组件(DfcItemBuilder)</a></li>
+<li><a href="#-%E7%89%A9%E5%93%81%E6%89%B9%E5%A4%84%E7%90%86%E5%99%A8dfc_itembatch-c%E7%BB%84%E4%BB%B6dfcitembatch">☑ 物品批处理器(dfc_itembatch) C#组件(DfcItemBatch)</a></li>
+<li><a href="#-%E8%A7%92%E8%89%B2%E5%93%8D%E5%BA%94%E5%99%A8dfc_characterresponder-c%E7%BB%84%E4%BB%B6dfccharacterresponder">☑ 角色响应器(dfc_characterresponder) C#组件(DfcCharacterResponder)</a></li>
+<li><a href="#-%E5%8F%AF%E7%A9%BF%E6%88%B4%E7%89%A9%E6%9F%93%E8%89%B2%E8%84%9A%E6%9C%ACdfc_scriptwearabledyeing-c%E7%BB%84%E4%BB%B6dfcscriptwearabledyeing">☑ 可穿戴物染色脚本(dfc_scriptwearabledyeing) C#组件(DfcScriptWearableDyeing)</a></li>
+<li><a href="#-wifi%E5%88%9D%E5%A7%8B%E5%8C%96%E8%84%9A%E6%9C%ACdfc_scriptwifiinitializer-c%E7%BB%84%E4%BB%B6dfcscriptwifiinitializer">☑ WIFI初始化脚本(dfc_scriptwifiinitializer) C#组件(DfcScriptWifiInitializer)</a></li>
+<li><a href="#-%E6%BD%9C%E8%89%87%E4%BD%8D%E7%BD%AE%E9%94%81%E5%AE%9A%E8%84%9A%E6%9C%ACdfc_scriptsubmarinelocker-c%E7%BB%84%E4%BB%B6dfcscriptsubmarinelocker">☑ 潜艇位置锁定脚本(dfc_scriptsubmarinelocker) C#组件(DfcScriptSubmarineLocker)</a></li>
+</ul>
+</li>
+<li><a href="#%E6%A8%A1%E7%BB%84%E4%BE%9D%E8%B5%96">模组依赖</a></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="简介">简介</h3>
+<p>派系工艺模组在渊深本体多人联机的沙盒模式中，以派系、职业、装备三元素作为基础，为玩家提供了丰富多样的自定义工具，以满足不同的地图需求。</p>
+<ol>
+<li><strong>派系</strong>：玩家可以选择加入不同的派系，每个派系都有其独特的背景故事、角色设定和玩法风格。例如，你可以加入守序的木卫二联盟，对社会的资源、制造与军力实施铁腕统治。或者加入木星分离主义分子，破坏木卫二联盟的正常运作，削弱其权威。</li>
+<li><strong>职业</strong>：每个派系提供了多种职业供玩家选择，每种职业都有独特的技能和能力。</li>
+<li><strong>装备</strong>：每个职业拥有一套独一无二、固有的或公共的装备体系，包括武器、防具、工具、药物和其他物资等，玩家可以根据场合上的情况选择不同装备进行应对。</li>
+</ol>
+<p>在派系工艺中，玩家可以自由地选择派系、职业和装备。然而，这些选项都存在三个共同的限制条件。只有在满足以下所有条件的情况下，玩家才能进行相应的选择。</p>
+<ol>
+<li><strong>剩余次数</strong> ＞ 0</li>
+<li><strong>当前数量</strong> ＜ 数量上限</li>
+<li><strong>比例(率)</strong> ＜ 比重</li>
+</ol>
+<p>这三个条件的<strong>主谓项</strong>（剩余次数、数量上限、当前数量、比例、比重）是根据它们的直接或间接的父级元素单独计算，派系限制条件的<strong>主谓项</strong>是根据所有的派系进行计算，而职业和装备的限制条件的<strong>主谓项</strong>是根据其所属的派系进行计算，<u>这么做的目的是为了让同一个职业、装备可以分别从属于不同的派系、职业，并且相互之间不产生冲突</u>。</p>
+<hr>
+<h3 id="重生系统">重生系统</h3>
+<p>如果使用dfc自定义了游戏模式，那么重生系统会被改写。只有在开启了 <code>允许复活</code> 选项后才生效，在重生倒计时结束后，玩家无法改变派系，但可以在之后的任意时间内再次重新选择职业和装备，这意味着你可以等待大部队一起重生。</p>
+<hr>
+<h3 id="初始化">初始化</h3>
+<h4 id="内部编辑器工具实现可选推荐">内部编辑器工具实现(可选,推荐)</h4>
+<p>如果没有通过外部Lua脚本实例化 <code>dfc</code> 并对其初始化，那么会尝试解包地图.sub文件并查找是否存在 <strong><a href="#-%E5%88%9D%E5%A7%8B%E5%8C%96%E5%99%A8dfc_initializer-c%E7%BB%84%E4%BB%B6dfcinitializer">初始化器</a></strong>，如果存在，则使用第一个被找到的初始化器执行初始化操作。在 <code>PVPMap</code> 模组中有完整的实例，请查看 <code>派系工艺 COC模组测试 ZRG改</code>。</p>
+<hr>
+<h3 id="工具">工具</h3>
+<p>派系工艺为地图开发者们提供了一套丰富的自定义套件，它们可以用来方便地实现非常多原版完全无法做到的功能，<u>在潜艇编辑器内测试允许您实时修改这些工具的属性以进行调试，不过在多人联机下无法手动调整可编辑属性</u>，接下来会逐一介绍每种工具以及它们各自的用途与示例，你可以根据自身的需要查找对应的工具。</p>
+<h4 id="-初始化器dfc_initializer-c组件dfcinitializer">☑ 初始化器(dfc_initializer) C#组件(DfcInitializer)</h4>
+<p>如果没有使用外部Lua脚本初始化地图，那么将利用该初始化器执行初始化操作。该组件提供了部分属性来改写游戏模式的基本设置：</p>
+<ol>
+<li><strong>Allow Mid Round Join</strong>: 允许玩家中途加入游戏</li>
+<li><strong>Allow Respawn</strong>: 允许复活</li>
+</ol>
+<h4 id="-新增出生区dfc_newspawnpointset-c组件dfcnewspawnpointset">☑ 新增出生区(dfc_newspawnpointset) C#组件(DfcNewSpawnPointSet)</h4>
+<h4 id="-新增派系dfc_newfaction-c组件dfcnewfaction">☑ 新增派系(dfc_newfaction) C#组件(DfcNewFaction)</h4>
+<h4 id="-新增职业dfc_newjob-c组件dfcnewjob">☑ 新增职业(dfc_newjob) C#组件(DfcNewJob)</h4>
+<h4 id="-新增装备dfc_newgear-c组件dfcnewgear">☑ 新增装备(dfc_newgear) C#组件(DfcNewGear)</h4>
+<h4 id="-允许派系重生dfc_allowrespawn-c组件dfcallowrespawn">☑ 允许派系重生(dfc_allowrespawn) C#组件(DfcAllowRespawn)</h4>
+<p><code>signal_in</code> 接受到 <code>&quot;0&quot;</code> 时禁止指定派系重生，否则视为允许。</p>
+<h4 id="-添加或移除职业dfc_addorremovejob-c组件dfcaddorremovejob">☑ 添加或移除职业(dfc_addorremovejob) C#组件(DfcAddOrRemoveJob)</h4>
+<p><code>signal_in</code> 接受到 <code>&quot;0&quot;</code> 时移除指定派系中的指定职业，否则视为添加。
+使用 <code>,</code> 分隔符可以指定多个派系和职业。</p>
+<h4 id="-添加或移除装备dfc_addorremovegear-c组件dfcaddorremovegear">☑ 添加或移除装备(dfc_addorremovegear) C#组件(DfcAddOrRemoveGear)</h4>
+<p><code>signal_in</code> 接受到 <code>&quot;0&quot;</code> 时移除指定职业中的指定装备，否则视为添加。
+使用 <code>,</code> 分隔符可以指定多个职业和装备。</p>
+<h4 id="-lua组件dfc_luacomponent-c组件dfcluacomponent">☑ Lua组件(dfc_luacomponent) C#组件(DfcLuaComponent)</h4>
+<p>Ctrl+CV自<a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2937571024">RGzXTrauma</a>模组，并且优化和解决了编译错误。</p>
+<h4 id="-传送点dfc_teleporter-c组件dfcteleporter">☑ 传送点(dfc_teleporter) C#组件(DfcTeleporter)</h4>
+<p>与<a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2902757031">ZDoor</a>模组以及PVP服使用的传送门类似，交互时可以传送角色，须要接线才能使其运转，有所不同的是它没有实际的贴图，但可以调整其交互范围以及传送开关，通常可以摆放其他的装饰物作为该传送点的外观。
+当由某个角色产生的信号发送到了传送点的<strong>信号输入</strong>时，该角色将被传送至该传送点的位置。
+该组件拥有以下属性用于控制传送逻辑：</p>
+<ol>
+<li><strong>Disable Teleport Dragged Character</strong>: 禁止传送被拖拽的角色</li>
+<li><strong>TeleportAble</strong>: 当值为假时，角色无法被传送至该点，可由信号设置</li>
+<li><strong>Cooldown</strong>: 传送后需要等待的全局冷却时间，而非为每个角色单独计算冷却</li>
+</ol>
+<h4 id="-数据获取器dfc_datagetter-c组件dfcdatagetter">☑ 数据获取器(dfc_datagetter) C#组件(DfcDataGetter)</h4>
+<p>它接受一个信号，并根据当前组件的索引 <code>DataIndex</code> 获取一个全局数据，如果获取的值为空，则会自动为其分配一个默认值 <code>DefaultData</code>，接线面板的各引脚说明：</p>
+<ol>
+<li><strong>get_data</strong>: 获取数据</li>
+<li><strong>set_index</strong>: 设置索引</li>
+<li><strong>signal_out</strong>: 输出数据值</li>
+</ol>
+<h4 id="-数据设置器dfc_datasetter-c组件dfcdatasetter">☑ 数据设置器(dfc_datasetter) C#组件(DfcDataSetter)</h4>
+<p>它接受一个信号，并将其信号值存储至当前组件的索引 <code>DataIndex</code> 中，接线面板的各引脚说明：</p>
+<ol>
+<li><strong>set_data</strong>: 设置数据值</li>
+<li><strong>set_index</strong>: 设置索引</li>
+</ol>
+<h4 id="-包含区域dfc_regionincluded">☑ 包含区域(dfc_regionincluded)</h4>
+<h4 id="-不包含区域dfc_regionexcluded">☑ 不包含区域(dfc_regionexcluded)</h4>
+<h4 id="-角色检测器dfc_characterchecker-c组件dfccharacterchecker">☑ 角色检测器(dfc_characterchecker) C#组件(DfcCharacterChecker)</h4>
+<p>通过链接(link) <strong><a href="#-%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionincluded">包含区域</a></strong> 或 <strong><a href="#-%E4%B8%8D%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionexcluded">不包含区域</a></strong> 组成区域，在接收到信号后，会输出该区域内匹配条件的角色总数。
+该组件拥有以下属性用于修改角色的匹配条件：</p>
+<ol>
+<li><strong>Minimum Velocity</strong>: 最小速度</li>
+<li><strong>Character Target Type</strong>: 角色类型</li>
+<li><strong>Character Species Names</strong>: 角色种名</li>
+<li><strong>Character Group</strong>: 角色组别</li>
+<li><strong>Character Tags</strong>: 角色标记</li>
+</ol>
+<h4 id="-角色检查器单个dfc_charactersinglechecker-c组件dfccharactersinglechecker">☑ 角色检查器(单个)(dfc_charactersinglechecker) C#组件(DfcCharacterSingleChecker)</h4>
+<p>接受一个由角色发出的信号，如果该角色匹配相应条件，将以该角色作为源将该<strong>信号值</strong>、<strong>角色GUID</strong>、<strong>角色名称</strong>、<strong>角色种名</strong>、<strong>角色组别</strong>、<strong>角色标记</strong>分别发送，通过以下属性修改角色的匹配条件：</p>
+<ol>
+<li><strong>Character Team Type</strong>: 角色类型</li>
+<li><strong>Character Species Names</strong>: 角色种名</li>
+<li><strong>Character Group</strong>: 角色组别</li>
+<li><strong>Character Tags</strong>: 角色标记</li>
+</ol>
+<h4 id="-动作-结束游戏dfc_actionendgame-c组件dfcactionendgame">☑ 动作† 结束游戏(dfc_actionendgame) C#组件(DfcActionEndGame)</h4>
+<p>在接收到信号以后结束本次巡回。</p>
+<h4 id="-动作-发送聊天消息dfc_actionsendchatmessage-c组件dfcactionsendchatmessage">☑ 动作† 发送聊天消息(dfc_actionsendchatmessage) C#组件(DfcActionSendChatMessage)</h4>
+<p>在接收到信号后向玩家发送消息，通过设置属性来过滤出可收到消息的玩家：</p>
+<ol>
+<li><strong>Sender Receiver Relation</strong>: 发送者(信号来源)必须存在且与接收者的必须关系，<code>无</code>则忽略
+<ul>
+<li>无</li>
+<li>不同队伍</li>
+<li>相同队伍</li>
+</ul>
+</li>
+<li><strong>Sender Target Type</strong>: 发送者类型</li>
+<li><strong>Sender Species Names</strong>: 发送者种名</li>
+<li><strong>Sender Group</strong>: 发送者组别</li>
+<li><strong>Sender Tags</strong>: 发送者标记</li>
+<li><strong>Receiver Target Type</strong>: 接受者类型</li>
+<li><strong>Receiver Species Names</strong>: 接受者种名</li>
+<li><strong>Receiver Group</strong>: 接受者组别</li>
+<li><strong>Receiver Tags</strong>: 接受者标记</li>
+<li><strong>Spectator Receivable</strong>: 发送给观众席</li>
+<li><strong>Spectator Only Receivable</strong>: 发送给仅观看的玩家</li>
+</ol>
+<h4 id="-事件-进出区域dfc_evententerleaveregion-c组件dfcevententerleaveregion">☑ 事件☇ 进出区域(dfc_evententerleaveregion) C#组件(DfcEventEnterLeaveRegion)</h4>
+<p>通过链接(link) <strong><a href="#-%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionincluded">包含区域</a></strong> 或 <strong><a href="#-%E4%B8%8D%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionexcluded">不包含区域</a></strong> 组成区域，当有角色进入或离开该区域后，会以该角色作为源并发送五个信号，分别为<strong>角色GUID(Globally Unique Identifier: 全局唯一标识符, 用于唯一标识某个实体的256位字符串)</strong>、<strong>角色名称</strong>、<strong>角色种名</strong>、<strong>角色标记</strong>、<strong>“0”或“1”(“0”表示离开，“1”表示进入)</strong>。
+该组件拥有以下属性用于控制事件触发的条件：</p>
+<ol>
+<li><strong>Minimum Velocity</strong>: 最小速度</li>
+<li><strong>Character Target Type</strong>: 角色类型</li>
+<li><strong>Character Species Names</strong>: 角色种名</li>
+<li><strong>Character Group</strong>: 角色组别</li>
+<li><strong>Character Tags</strong>: 角色标记</li>
+<li><strong>Match After Leave</strong>: 在角色离开时须匹配2-5属性，否则无法触发事件</li>
+</ol>
+<h4 id="-事件-死亡dfc_eventcharacterdeath-c组件dfceventcharacterdeath">☑ 事件☇ 死亡(dfc_eventcharacterdeath) C#组件(DfcEventCharacterDeath)</h4>
+<p>当有角色死亡时，会以该角色作为源并发送十个信号，分别为<strong>死者GUID</strong>、<strong>死者名称</strong>、<strong>死者种名</strong>、<strong>死者组别</strong>、<strong>死者标记</strong>、<strong>凶手GUID</strong>、<strong>凶手名称</strong>、<strong>凶手种名</strong>、<strong>凶手组别</strong>、<strong>凶手标记</strong>，1-5的信号源为死者，6-10的信号源为凶手。
+该组件拥有以下属性用于控制事件触发的条件：</p>
+<ol>
+<li><strong>Death Target Type</strong>: 死者类型</li>
+<li><strong>Death Species Names</strong>: 死者种名</li>
+<li><strong>Death Group</strong>: 死者组别</li>
+<li><strong>Death Tags</strong>: 死者标记</li>
+<li><strong>Killer Target Type</strong>: 凶手类型</li>
+<li><strong>Killer Species Names</strong>: 凶手种名</li>
+<li><strong>Killer Group</strong>: 凶手组别</li>
+<li><strong>Killer Tags</strong>: 凶手标记</li>
+</ol>
+<h4 id="-角色清除器dfc_charactercleaner-c组件dfccharactercleaner">☑ 角色清除器(dfc_charactercleaner) C#组件(DfcCharacterCleaner)</h4>
+<p>在引脚<strong>signal_in</strong>接收到信号后，会对其搜索到的所有待清除角色记录一次，如果目标的记录次数达到了给定次数，则将其清除，适当地合理使用可以缓解游戏不必要的卡顿，可以链接(link) <strong><a href="#-%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionincluded">包含区域</a></strong> 和 <strong><a href="#-%E4%B8%8D%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionexcluded">不包含区域</a></strong> 以用于约束角色的搜索范围。。</p>
+<ul>
+<li><strong>属性</strong>
+<ol>
+<li><strong>Tolerance Threshold 清除阈值</strong>
+角色记录次数达到该阈值时将被清除</li>
+<li><strong>Character Target Type</strong>: 角色类型</li>
+<li><strong>Character Species Names</strong>: 角色种名</li>
+<li><strong>Character Group</strong>: 角色组别</li>
+<li><strong>Character Tags</strong>: 角色标记</li>
+</ol>
+</li>
+</ul>
+<h4 id="-物品清除器dfc_itemcleaner-c组件dfcitemcleaner">☑ 物品清除器(dfc_itemcleaner) C#组件(DfcItemCleaner)</h4>
+<ul>
+<li><strong>用途</strong>
+在引脚<strong>signal_in</strong>接收到信号后，会对其搜索到的所有待清除物品记录一次，如果物品的记录次数达到了给定次数，则将其清除，适当地合理使用可以缓解游戏不必要的卡顿。</li>
+<li><strong>属性</strong>
+<ul>
+<li><strong>Tolerance Threshold 清除阈值</strong>
+物品记录次数达到该阈值时将被清除</li>
+<li><strong>Clean Rule 清除规则</strong>
+构建一个清除规则的表达式需要定义至少一个标签组，以逗号<code>,</code>作为分隔符可以添加多个标签组，在标签组内也可以使用竖线 <code>|</code> 定义一个组内标签，当物品的<strong>标签Tags</strong>或<strong>标识符identifier</strong>匹配了其中一个标签组的所有组内标签时，则会被记录一次。
+清除规则分为<strong>弱清除</strong>与<strong>强清除</strong>，并继而分为<strong>包含</strong>与<strong>不包含</strong>，弱清除是指只有当物品不在容器内才会被记录，而强清除无视该条件。包含是指待清除物品须要匹配对应规则，而不包含要求不匹配。
+<ul>
+<li><strong>Weak Clean Pattern Includes 弱清除包含</strong></li>
+<li><strong>Weak Clean Pattern Excludes 弱清除不包含</strong></li>
+<li><strong>Strong Clean Pattern Includes 强清除包含</strong></li>
+<li><strong>Strong Clean Pattern Excludes 强清除不包含</strong></li>
+</ul>
+</li>
+<li><strong>Only Indoor 仅清除其所在潜艇上的物品</strong></li>
+<li><strong>Ignore Static Body 忽略静态物品(导航终端,引擎,接线盒……)</strong></li>
+<li><strong>Ignore Attached 忽略安装在了墙壁上的物品</strong></li>
+<li><strong>Ignore Initial 忽略在巡回开始时加载的物品</strong></li>
+</ul>
+</li>
+<li><strong>链接</strong>
+可以链接(link) <strong><a href="#-%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionincluded">包含区域</a></strong> 和 <strong><a href="#-%E4%B8%8D%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionexcluded">不包含区域</a></strong> 以用于约束物品的搜索范围。</li>
+<li><strong>示例</strong>
+下方的代码为该组件在保存之后于XML文本中的表示<pre><code class="language-xml"><span class="hljs-comment">&lt;!-- 弱清除带有 medical 或 weapon 标签的物品 --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">DfcItemCleaner</span>
+  <span class="hljs-attr">WeakCleanIncludes</span>=<span class="hljs-string">&quot;medical,weapon&quot;</span>
+/&gt;</span>
+<span class="hljs-comment">&lt;!-- 弱清除带有 medical 或 weapon 标签的物品，但不包含吗啡或步枪 --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">DfcItemCleaner</span>
+  <span class="hljs-attr">WeakCleanIncludes</span>=<span class="hljs-string">&quot;medical,weapon&quot;</span>
+  <span class="hljs-attr">WeakCleanExcludes</span>=<span class="hljs-string">&quot;antidama1,rifle&quot;</span>
+/&gt;</span>
+<span class="hljs-comment">&lt;!-- 弱清除带有 smallitem＋weapon 标签的物品 --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">DfcItemCleaner</span>
+  <span class="hljs-attr">WeakCleanIncludes</span>=<span class="hljs-string">&quot;smallitem|weapon&quot;</span>
+/&gt;</span>
+<span class="hljs-comment">&lt;!-- 弱清除带有 smallitem＋weapon 标签的物品，但不包含机关手枪 --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">DfcItemCleaner</span>
+  <span class="hljs-attr">WeakCleanIncludes</span>=<span class="hljs-string">&quot;smallitem|weapon&quot;</span>
+  <span class="hljs-attr">WeakCleanExcludes</span>=<span class="hljs-string">&quot;machinepistol&quot;</span>
+/&gt;</span>
+<span class="hljs-comment">&lt;!-- 弱清除带有 smallitem＋weapon 或 mediumitem＋weapon 标签的物品 --&gt;</span>
+<span class="hljs-comment">&lt;!-- 但不包含机关手枪或突击步枪 --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">DfcItemCleaner</span>
+  <span class="hljs-attr">WeakCleanIncludes</span>=<span class="hljs-string">&quot;smallitem|weapon,mediumitem|weapon&quot;</span>
+  <span class="hljs-attr">WeakCleanExcludes</span>=<span class="hljs-string">&quot;machinepistol,assaultrifle&quot;</span>
+/&gt;</span>
+</code></pre>
+</li>
+</ul>
+<h4 id="-物品生成器dfc_itembuilder-c组件dfcitembuilder">☑ 物品生成器(dfc_itembuilder) C#组件(DfcItemBuilder)</h4>
+<p>属性<strong>Item Builds 物品构建集</strong>存储了一个lua脚本的<code>{}</code>，是<strong>Item Builder Block 物品生成块</strong>的数组，用于描述物品生成信息，该组件在接受到信号之后，会查找该信号的发送者，如若找到发送信号的角色，则将物品生成在角色身上，否则生成在该物品生成器所在的位置，通过链接(link) <strong><a href="#-%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionincluded">包含区域</a></strong> 可以改变物品生成的位置。</p>
+<p>该组件拥有以下属性用于控制生成逻辑：</p>
+<ol>
+<li><strong>Item Builds</strong>: 存储一个Lua脚本<code>{}</code>类型的值，用以描述物品生成信息</li>
+<li><strong>Can Spawn</strong>: 是否可以生成</li>
+<li><strong>Amount</strong>: 限定生成的次数</li>
+<li><strong>Force Spawn At Positions</strong>: 强制生成在即将被确定的某个位置，而不是角色身上</li>
+<li><strong>Required Sender</strong>: 要求发送者存在</li>
+<li><strong>Sender Target Type</strong>: 发送者类型</li>
+<li><strong>Sender Species Names</strong>: 发送者种名</li>
+<li><strong>Sender Group</strong>: 发送者组别</li>
+<li><strong>Sender Tags</strong>: 发送者标记</li>
+<li><strong>Group</strong>: 该值相同的物品生成器会被分到同一组，如果角色触发过<strong>Group</strong>组内的某个物品生成器，则无法生成，如果该属性值为空，则无限制。</li>
+<li><strong>Identifier</strong>: 标识符，暂时没有任何用途</li>
+</ol>
+<p><strong>Item Builds</strong>的定义示例如下：</p>
+<pre><code class="language-lua"><span class="hljs-keyword">return</span> {
+    <span class="hljs-string">&quot;这只是一个用于调试的名称&quot;</span>,
+    {
+        <span class="hljs-comment">-- 生成一个自注射耳机(identifier: autoinjectorheadset)</span>
+        identifier = <span class="hljs-string">&quot;autoinjectorheadset&quot;</span>,
+        <span class="hljs-comment">-- 执行装备操作(equip: true)</span>
+        equip = <span class="hljs-literal">true</span>,
+        <span class="hljs-comment">-- 继承角色的耳机wifi通道(inheritchannel: true)</span>
+        inheritchannel = <span class="hljs-literal">true</span>,
+        <span class="hljs-comment">-- 在自注射耳机内生成c4炸弹</span>
+        <span class="hljs-comment">-- 但物品标签须修改为&quot;chem,medical&quot;</span>
+        inventory = {
+            { identifier = <span class="hljs-string">&quot;c4block&quot;</span>, tags = <span class="hljs-string">&quot;chem,medical&quot;</span> },
+        }
+    },
+    {
+        <span class="hljs-comment">-- 生成战地医疗服(identifier: doctorsuniform1)</span>
+        identifier = <span class="hljs-string">&quot;doctorsuniform1&quot;</span>,
+        <span class="hljs-comment">-- 执行装备操作(equip: true)</span>
+        equip = <span class="hljs-literal">true</span>,
+        <span class="hljs-comment">-- 在战地医疗服内生成3种药物</span>
+        inventory = {
+            <span class="hljs-comment">-- 生成1组绷带(8个)</span>
+            { identifier = <span class="hljs-string">&quot;antibleeding1&quot;</span>,  stacks = <span class="hljs-number">1</span> },
+            <span class="hljs-comment">-- 生成2袋生理盐水</span>
+            { identifier = <span class="hljs-string">&quot;antibloodloss2&quot;</span>, amount = <span class="hljs-number">2</span> },
+            <span class="hljs-comment">-- 在剩余的容器空间中填满吗啡</span>
+            { identifier = <span class="hljs-string">&quot;antidama1&quot;</span>,      fillinventory = <span class="hljs-literal">true</span> }
+        }
+    },
+    {
+        <span class="hljs-comment">-- 生成一个声纳信标</span>
+        identifier = <span class="hljs-string">&quot;sonarbeacon&quot;</span>,
+        <span class="hljs-comment">-- 放置在17号槽位，对应人类物品栏内的最后一个槽位</span>
+        slotindex = <span class="hljs-number">17</span>,
+        <span class="hljs-comment">-- 设置声纳信标属性</span>
+        properties = {
+            <span class="hljs-comment">-- 设置声纳信标为不可交互的</span>
+            noninteractable = <span class="hljs-literal">true</span>,
+            <span class="hljs-comment">-- 设置CustomInterface组件的ElementStates属性，将可编辑的第一个条目(开启信标)设置为真</span>
+            [{ <span class="hljs-string">&quot;custominterface&quot;</span>, <span class="hljs-string">&quot;elementstates&quot;</span> }] = <span class="hljs-string">&quot;true,&quot;</span>,
+            <span class="hljs-comment">-- 设置CustomInterface组件的Signals属性，将可编辑的第二个条目(声纳信号)设置为“我在这里~”</span>
+            [{ <span class="hljs-string">&quot;custominterface&quot;</span>, <span class="hljs-string">&quot;signals&quot;</span> }] = <span class="hljs-string">&quot;;我在这里~&quot;</span>,
+        },
+        <span class="hljs-comment">-- 因为CustomInterface的属性无法像其他组件的属性一样直接同步给客户端</span>
+        <span class="hljs-comment">-- 所以须要创建一个CustomInterface的ServerEvent事件来实现同步</span>
+        <span class="hljs-comment">-- 提示：并非所有组件的属性都可以通过创建ServerEvent事件来同步，具体问题需通过分析游戏源代码来解决</span>
+        serverevents = <span class="hljs-string">&quot;custominterface&quot;</span>,
+        inventory = {
+            {
+                <span class="hljs-comment">-- 生成一颗电池</span>
+                identifier = <span class="hljs-string">&quot;batterycell&quot;</span>,
+                <span class="hljs-comment">-- 电池改为不可破坏(无限能源)</span>
+                properties = { indestructible = <span class="hljs-literal">true</span> }
+            }
+        }
+    },
+    {
+        identifier = <span class="hljs-string">&quot;boardingaxe&quot;</span>,
+        <span class="hljs-comment">-- 物品生成后的回调函数</span>
+        onspawned = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(item)</span></span>
+            <span class="hljs-comment">-- 生成登船斧(identifier: boardingaxe)之后在控制台输出其名称</span>
+            <span class="hljs-built_in">print</span>(item.Name)
+        <span class="hljs-keyword">end</span>
+    },
+    {
+        identifier = <span class="hljs-string">&quot;door&quot;</span>,
+        <span class="hljs-comment">-- 生成一扇手动门, 并放置和固定在潜艇上(install: true)</span>
+        install = <span class="hljs-literal">true</span>
+    },
+    <span class="hljs-comment">-- 随机调用3次(amount: 3)物品池并(pool)生成手榴弹</span>
+    {
+        amount = <span class="hljs-number">3</span>,
+        <span class="hljs-comment">-- 25%几率(10/40)生成燃素、震撼、破片手榴弹其中一个</span>
+        <span class="hljs-comment">-- 12.5%几率(5/40)生成EMP、酸液手榴弹其中一个</span>
+        pool = {
+            <span class="hljs-comment">-- 比重(weight)为10，表示在该物品池中的权重，影响其被抽中的几率</span>
+            { <span class="hljs-number">10</span>, { identifier = <span class="hljs-string">&quot;fraggrenade&quot;</span> } },
+            { <span class="hljs-number">10</span>, { identifier = <span class="hljs-string">&quot;stungrenade&quot;</span> } },
+            { <span class="hljs-number">10</span>, { identifier = <span class="hljs-string">&quot;incendiumgrenade&quot;</span> } },
+            { <span class="hljs-number">5</span>,  { identifier = <span class="hljs-string">&quot;empgrenade&quot;</span> } },
+            { <span class="hljs-number">5</span>,  { identifier = <span class="hljs-string">&quot;chemgrenade&quot;</span> } },
+        }
+    },
+    <span class="hljs-comment">-- 抽卡, 50%概率: 一个存放了雷管(大师级c4炸弹或脏弹)的工具箱</span>
+    {
+        pool = {
+            {
+                <span class="hljs-number">50</span>,
+                {
+                    {
+                        identifier = <span class="hljs-string">&quot;toolbox&quot;</span>,
+                        inventory = {
+                            { identifier = <span class="hljs-string">&quot;screwdriver&quot;</span> },
+                            { identifier = <span class="hljs-string">&quot;wrench&quot;</span> },
+                            { identifier = <span class="hljs-string">&quot;bluewire&quot;</span> },
+                            {
+                                identifier = <span class="hljs-string">&quot;detonator&quot;</span>,
+                                inventory = {
+                                    pool = {
+                                        { <span class="hljs-number">40</span>, { identifier = <span class="hljs-string">&quot;c4block&quot;</span>, quality = <span class="hljs-number">3</span> } },
+                                        { <span class="hljs-number">20</span>, { identifier = <span class="hljs-string">&quot;dirtybomb&quot;</span> } },
+                                    }
+                                }
+                            },
+                            { identifier = <span class="hljs-string">&quot;button&quot;</span> },
+                        }
+                    }
+                }
+            },
+            <span class="hljs-comment">-- 50%概率什么也没有</span>
+            {
+                <span class="hljs-number">50</span>,
+                {}
+            }
+        }
+    },
+}
+</code></pre>
+<h4 id="-物品批处理器dfc_itembatch-c组件dfcitembatch">☑ 物品批处理器(dfc_itembatch) C#组件(DfcItemBatch)</h4>
+<p>属性<strong>Item Batch Unit 批处理单元</strong>存储了一个lua脚本的<code>{}</code>，是<strong>Item Batch Block 批处理块</strong>的数组，用于描述物品批处理过程，该组件在接受到信号之后，会对其链接(link)的所有物品进行批处理，除此之外还会查找该信号的发送者，如若找到发送信号的角色，则也会对角色身上的物品进行批处理。</p>
+<p>该组件拥有以下属性用于控制批处理逻辑：</p>
+<ol>
+<li><strong>Item Batch Unit</strong>: 存储一个Lua脚本<code>{}</code>类型的值，用以描述物品批处理过程</li>
+<li><strong>Can Batch</strong>: 是否可以进行批处理</li>
+<li><strong>Only Batch Linked To</strong>: 仅对链接的物品进行批处理</li>
+<li><strong>Amount</strong>: 限定批处理的次数</li>
+<li><strong>Required Sender</strong>: 要求发送者存在</li>
+<li><strong>Sender Target Type</strong>: 发送者类型</li>
+<li><strong>Sender Species Names</strong>: 发送者种名</li>
+<li><strong>Sender Group</strong>: 发送者组别</li>
+<li><strong>Sender Tags</strong>: 发送者标记</li>
+<li><strong>Group</strong>: 该值相同的物品批处理器会被分到同一组，如果角色触发过<strong>Group</strong>组内的某个物品批处理器，则无法生成，如果该属性值为空，则无限制。</li>
+<li><strong>Identifier</strong>: 标识符，暂时没有任何用途</li>
+</ol>
+<p><strong>Item Batch Unit</strong>的定义示例如下：</p>
+<pre><code class="language-lua"><span class="hljs-keyword">return</span> {
+    <span class="hljs-string">&quot;这只是一个用于调试的名称&quot;</span>,
+    <span class="hljs-comment">-- 丢弃掉耳机容器内的非注射型药物</span>
+    {
+        <span class="hljs-comment">-- 添加匹配条件: 要求物品须要在耳机槽位上，支持用数组表示</span>
+        <span class="hljs-comment">-- 例如 slottype = { InvSlotType.Headset, InvSlotType.Any }，表示匹配耳机槽位和非装备型槽位(Any)</span>
+        slottype = InvSlotType.Headset,
+        <span class="hljs-comment">-- 匹配成功后，对匹配的物品其容器内的子物品进行批处理</span>
+        inventory = {
+            <span class="hljs-comment">-- 添加匹配条件: 没有syringe标签</span>
+            excludedtags = <span class="hljs-string">&quot;syringe&quot;</span>,
+            <span class="hljs-comment">-- 匹配成功后，丢弃掉匹配的物品</span>
+            drop = <span class="hljs-literal">true</span>
+        }
+    },
+    {
+        <span class="hljs-comment">-- 添加匹配条件: 是战地医疗服(doctorsuniform1)，支持用数组表示</span>
+        <span class="hljs-comment">-- 例如 identifiers = { &quot;doctorsuniform1&quot;, &quot;doctorsuniform2&quot; }, 表示战地医疗服或医生制服</span>
+        identifiers = <span class="hljs-string">&quot;doctorsuniform1&quot;</span>,
+        <span class="hljs-comment">-- 添加匹配条件: 要求物品是被装备或穿戴的</span>
+        equipped = <span class="hljs-literal">true</span>,
+        inventory = {
+            <span class="hljs-comment">-- 丢弃掉战地医疗服里的绷带</span>
+            { identifiers = <span class="hljs-string">&quot;antibleeding1&quot;</span>, drop = <span class="hljs-literal">true</span> },
+            <span class="hljs-comment">-- 移除掉生理盐水</span>
+            { identifiers = <span class="hljs-string">&quot;antibloodloss2&quot;</span>, <span class="hljs-built_in">remove</span> = <span class="hljs-literal">true</span> },
+            <span class="hljs-comment">-- 匹配具有medical标签的物品，并将其图标颜色改为&quot;0,0,0&quot;(黑色)</span>
+            { tags = <span class="hljs-string">&quot;medical&quot;</span>, properties = { inventoryiconcolor = <span class="hljs-string">&quot;0,0,0&quot;</span> } }
+        }
+    },
+    {
+        <span class="hljs-comment">-- 添加匹配条件: 是声纳信标(sonarbeacon)</span>
+        identifiers = <span class="hljs-string">&quot;sonarbeacon&quot;</span>,
+        <span class="hljs-comment">-- 添加匹配条件: 在17号槽位上，对应人类物品栏内的最后一个槽位，支持用数组表示</span>
+        <span class="hljs-comment">-- 例如 slotindex = { 16, 17 }, 表示人类物品栏内的倒数两个槽位</span>
+        slotindex = <span class="hljs-number">17</span>,
+        properties = {
+            <span class="hljs-comment">-- 改为可交互的</span>
+            noninteractable = <span class="hljs-literal">false</span>,
+        },
+        inventory = {
+            <span class="hljs-comment">-- 将容器内的物品(电池)改为可破坏的</span>
+            properties = { indestructible = <span class="hljs-literal">false</span> }
+        }
+    },
+    <span class="hljs-comment">-- 把电棍的大小放大5倍</span>
+    {
+        identifiers = <span class="hljs-string">&quot;stungrenade&quot;</span>,
+        properties = { scale = <span class="hljs-number">5</span> }
+    },
+    <span class="hljs-comment">-- 丢弃掉工具箱-&gt;雷管内的物品</span>
+    {
+        identifiers = <span class="hljs-string">&quot;toolbox&quot;</span>,
+        inventory = {
+            identifiers = <span class="hljs-string">&quot;detonator&quot;</span>,
+            inventory = {
+                drop = <span class="hljs-literal">true</span>
+            }
+        }
+    },
+    <span class="hljs-comment">-- 移除品质为2的左轮手枪, quality对物品的品质进行匹配，也支持数组</span>
+    {
+        identifier = <span class="hljs-string">&quot;revolver&quot;</span>,
+        quality = <span class="hljs-number">2</span>,
+        inventory = { <span class="hljs-built_in">remove</span> = <span class="hljs-literal">true</span> }
+    },
+    <span class="hljs-comment">-- 移除所有物品</span>
+    <span class="hljs-comment">-- { remove = true },</span>
+    <span class="hljs-comment">-- 移除物品栏内非装备槽位的所有物品</span>
+    <span class="hljs-comment">-- { slottype = InvSlotType.Any, remove = true },</span>
+}
+</code></pre>
+<h4 id="-角色响应器dfc_characterresponder-c组件dfccharacterresponder">☑ 角色响应器(dfc_characterresponder) C#组件(DfcCharacterResponder)</h4>
+<p>属性<strong>Chunk 应答回调</strong>存储了一个lua脚本的编程块(chunk/block)，该组件在接受到信号之后，如若查找到发送该信号的角色，则会对该角色执行脚本函数，使用示例如下：</p>
+<pre><code class="language-lua"><span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(character)</span></span>
+    <span class="hljs-comment">-- 给予角色狂战士天赋</span>
+    character.GiveTalent(<span class="hljs-string">&quot;berserker&quot;</span>)
+    <span class="hljs-comment">-- 武器技能提高40</span>
+    character.Info.IncreaseSkillLevel(<span class="hljs-string">&quot;weapons&quot;</span>, <span class="hljs-number">40</span>)
+    <span class="hljs-comment">-- 医疗技能设置为100</span>
+    character.Info.SetSkillLevel(<span class="hljs-string">&quot;medical&quot;</span>, <span class="hljs-number">100</span>)
+
+    <span class="hljs-comment">-- 在角色的主肢体上施加1点画皮共生(husksymbiosis)</span>
+    character.CharacterHealth.ApplyAffliction(
+        character.AnimController.MainLimb,
+        AfflictionPrefab.Prefabs[Identifier(<span class="hljs-string">&quot;husksymbiosis&quot;</span>)].Instantiate(<span class="hljs-number">1</span>))
+<span class="hljs-keyword">end</span>
+</code></pre>
+<p>支持通过链接(link) <strong><a href="#-%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionincluded">包含区域</a></strong> 或 <strong><a href="#-%E4%B8%8D%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionexcluded">不包含区域</a></strong> 组成区域，并将脚本函数应用于该区域内所有通过匹配的角色。
+通过以下属性修改角色的响应条件：</p>
+<ol>
+<li><strong>Can Response</strong>: 是否可以响应</li>
+<li><strong>Apply To Sender</strong>: 是否应用于发送者</li>
+<li><strong>Character Team Type</strong>: 角色类型</li>
+<li><strong>Character Species Names</strong>: 角色种名</li>
+<li><strong>Character Group</strong>: 发送者组别</li>
+<li><strong>Character Tags</strong>: 发送者标记</li>
+<li><strong>Group</strong>: 该值相同的角色响应器会被分到同一组，如果角色被<strong>Group</strong>组内的某个角色响应器应用过脚本函数，则无法再次响应，如果该属性值为空，则无限制。</li>
+<li><strong>Identifier</strong>: 标识符，暂时没有任何用途</li>
+</ol>
+<h4 id="-可穿戴物染色脚本dfc_scriptwearabledyeing-c组件dfcscriptwearabledyeing">☑ 可穿戴物染色脚本(dfc_scriptwearabledyeing) C#组件(DfcScriptWearableDyeing)</h4>
+<p>当角色穿戴物品时，可以改变该物品的颜色。
+该组件拥有以下属性用于修改染色条件：</p>
+<ol>
+<li><strong>Sprite Color</strong>: 贴图颜色</li>
+<li><strong>Inventory Icon Color</strong>: 图标颜色</li>
+<li><strong>Wearer Target Type</strong>: 穿戴者类型</li>
+<li><strong>Wearer Species Names</strong>: 穿戴者种名</li>
+<li><strong>Wearer Group</strong>: 穿戴者组别</li>
+<li><strong>Wearer Tags</strong>: 穿戴者标记</li>
+<li><strong>Matcher Pattern  Includes</strong> 要求物品拥有指定标识符或标签，其表达式规则与 <a href="#-%E7%89%A9%E5%93%81%E6%B8%85%E9%99%A4%E5%99%A8dfc_itemcleaner-c%E7%BB%84%E4%BB%B6dfcitemcleaner">物品清除器</a> 的相同</li>
+<li><strong>Matcher Pattern Excludes</strong> 要求物品没有指定标识符或标签</li>
+<li><strong>InvSlotType</strong> 允许的槽位类型</li>
+</ol>
+<h4 id="-wifi初始化脚本dfc_scriptwifiinitializer-c组件dfcscriptwifiinitializer">☑ WIFI初始化脚本(dfc_scriptwifiinitializer) C#组件(DfcScriptWifiInitializer)</h4>
+<p>当任何带有wifi组件的物品被创建后，可以改变其wifi频道和所属队伍，通过链接(link) <strong><a href="#-%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionincluded">包含区域</a></strong> 或 <strong><a href="#-%E4%B8%8D%E5%8C%85%E5%90%AB%E5%8C%BA%E5%9F%9Fdfc_regionexcluded">不包含区域</a></strong> 用于匹配物品生成的位置，也支持通过与 <a href="#-%E7%89%A9%E5%93%81%E6%B8%85%E9%99%A4%E5%99%A8dfc_itemcleaner-c%E7%BB%84%E4%BB%B6dfcitemcleaner">物品清除器</a> 相同的表达式规则限制物品的标识符和标签。
+该脚本组件部分属性说明：</p>
+<ol>
+<li><strong>Wifi Channel Range</strong> 一个数值范围，用于将wifi组件的通道设置为其范围内的一个随机数</li>
+<li><strong>Always Calculate Random Channel</strong> 是否始终计算随机通道？值为 <code>真</code> 时wifi组件的通道始终由 <code>Wifi Channel Range</code> 随机确定，否则只会被设置为第一次计算出来的随机数。</li>
+<li><strong>TeamID</strong> 修改wifi的所属队伍</li>
+</ol>
+<h4 id="-潜艇位置锁定脚本dfc_scriptsubmarinelocker-c组件dfcscriptsubmarinelocker">☑ 潜艇位置锁定脚本(dfc_scriptsubmarinelocker) C#组件(DfcScriptSubmarineLocker)</h4>
+<hr>
+<h3 id="模组依赖">模组依赖</h3>
+<ul>
+<li><strong>Lua For Barotrauma</strong></li>
+<li><strong>Cs For Barotrauma</strong></li>
+<li><strong>Moses</strong></li>
+<li><strong>Lua Utility Belt</strong></li>
+<li><strong>DSSI(Dynamic Submarine Script Injector)</strong></li>
+</ul>
+
+        
+        
+    </body>
+    </html>

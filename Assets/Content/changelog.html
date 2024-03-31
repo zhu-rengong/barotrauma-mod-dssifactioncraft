@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>v2&period;0</title>
+        <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <h4 id="v20">v2.0</h4>
+<ul>
+<li>修复了职业比重计算错误</li>
+</ul>
+<h4 id="v19">v1.9</h4>
+<ul>
+<li>代码重构（OOD框架）</li>
+<li>一些响应lua脚本的dfc地图工具在发生错误时抛出异常并输出错误信息，阻止游戏直接崩溃</li>
+</ul>
+<h4 id="v18">v1.8</h4>
+<ul>
+<li><code>新建派系</code> 添加 <code>OnJoinedChunk</code> 字段，所有从属于此派系下的角色生成以后会在职业的 <code>OnAssignedChunk</code> 之前优先执行。</li>
+<li>添加 <code>阻断器</code> 和 <code>平台</code>，在潜艇编辑器Misc分类-&gt;派系工艺子分类中可找到</li>
+</ul>
+<h4 id="v15">v1.5</h4>
+<ul>
+<li>派系属性 <code>MaxLives</code> 指定每名玩家拥有多少条生命</li>
+<li>职业属性 <code>LiveConsumption</code> 指定选择该职业的玩家会消耗多少条生命，生命不足时，无法重生</li>
+<li>单机模式新增 <code>!factionlist, !joinfaction, !joblist, !assignjob, !assignjobs</code> 命令用于调试派系、职业</li>
+<li>修复了死亡事件触发时没有在同一时刻并列发送死者和杀手的信号</li>
+<li>一些代码重构和优化</li>
+</ul>
+<h4 id="v15-1">v1.5</h4>
+<ul>
+<li>修复wifi初始化器无法初始化巡回加载时生成的wifi组件</li>
+<li>为单人模式提供了两个聊天框命令用于调试编辑器内定义的装备
+<ul>
+<li>!gearlist 获取装备列表</li>
+<li>!spawngear <identifier> 生成指定装备</li>
+<li>!spawngears 生成所有装备</li>
+</ul>
+</li>
+</ul>
+<h4 id="v14">v1.4</h4>
+<ul>
+<li>新增服装染色工具</li>
+<li>新增Wifi初始化工具</li>
+</ul>
+<h4 id="v13">v1.3</h4>
+<ul>
+<li>添加初始化器、新增出生区、新增派系、新增职业、新增装备 ５ 项工具，用以替代外部Lua脚本。</li>
+<li>统一所有的角色筛选器 <code>TargetType</code>，并额外提供 <code>角色标记</code> 新选项。</li>
+<li>SpawnPointSet(出生区)、Faction(派系)、Job(职业)、Gear(装备)可以使用字段 <code>characterTags</code> 为对应的角色添加标记，使用 <code>,</code> 分隔符能为角色添加多个标记</li>
+<li>为部分工具的电路输出添加 <code>角色标记</code> 引脚，用以输出角色的所有标记，多个标记会使用 <code>,</code> 符号隔开，但这会导致之前地图上的电线连接关系错乱（老背刺了</li>
+<li>修复了部分错误的属性名称</li>
+<li>角色触发的信号将分期发送，防止在同一时间处理多个信号时发生信号覆盖的问题</li>
+</ul>
+
+        
+        
+    </body>
+    </html>

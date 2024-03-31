@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Items>
+  <Item name="" identifier="dfc_solidlight" category="Misc" subcategory="dfc" tags="smallitem,light" scale="0.5" allowedlinks="structure,item" spritecolor="0.1,0.1,0.1,0.1" linkable="true" resizehorizontal="true" resizevertical="true">
+    <Sprite texture="%ModDir%/DFC/UI/white.png" sourcerect="0,0,64,64" depth="0.850" />
+    <LightComponent lightcolor="1.0,1.0,1.0,0.5" range="2048.0" powerconsumption="0">
+      <LightTexture texture="%ModDir%/DFC/UI/white.png" origin="0.5,0.5" />
+    </LightComponent>
+    <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
+      <GuiFrame relativesize="0.2,0.32" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
+      <RequiredItem items="screwdriver" type="Equipped" />
+      <input name="power" displayname="connection.power" />
+      <input name="toggle" displayname="connection.togglestate" />
+      <input name="set_state" displayname="connection.setstate" />
+      <input name="set_color" displayname="connection.setcolor" />
+    </ConnectionPanel>
+  </Item>
+</Items>

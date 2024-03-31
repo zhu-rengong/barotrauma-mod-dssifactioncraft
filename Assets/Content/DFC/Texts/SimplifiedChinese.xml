@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<infotexts language="Simplified Chinese" nowhitespace="true" translatedname="中文(简体)">
+  <entityname.dfc_initializer>初始化器</entityname.dfc_initializer>
+  <entitydescription.dfc_initializer>如果没有使用外部Lua脚本初始化地图，那么将利用该初始化器执行初始化操作。</entitydescription.dfc_initializer>
+  <entityname.dfc_newspawnpointset>新增出生区</entityname.dfc_newspawnpointset>
+  <entitydescription.dfc_newspawnpointset></entitydescription.dfc_newspawnpointset>
+  <entityname.dfc_newfaction>新增派系</entityname.dfc_newfaction>
+  <entitydescription.dfc_newfaction></entitydescription.dfc_newfaction>
+  <entityname.dfc_newjob>新增职业</entityname.dfc_newjob>
+  <entitydescription.dfc_newjob></entitydescription.dfc_newjob>
+  <entityname.dfc_newgear>新增装备</entityname.dfc_newgear>
+  <entitydescription.dfc_newgear></entitydescription.dfc_newgear>
+  <entityname.dfc_allowrespawn>允许派系重生</entityname.dfc_allowrespawn>
+  <entitydescription.dfc_allowrespawn>‖color:gui.blue‖signal_in‖end‖ 接受到 ‖color:gui.yellow‖"0"‖end‖ 时禁止指定派系重生，否则视为允许。</entitydescription.dfc_allowrespawn>
+  <entityname.dfc_addorremovejob>添加或移除职业</entityname.dfc_addorremovejob>
+  <entitydescription.dfc_addorremovejob>‖color:gui.blue‖signal_in‖end‖ 接受到 ‖color:gui.yellow‖"0"‖end‖ 时移除指定派系中的指定职业，否则视为添加。使用 ‖color:gui.orange‖,‖end‖ 分隔符可以指定多个派系和职业。</entitydescription.dfc_addorremovejob>
+  <entityname.dfc_addorremovegear>添加或移除装备</entityname.dfc_addorremovegear>
+  <entitydescription.dfc_addorremovegear>‖color:gui.blue‖signal_in‖end‖ 接受到 ‖color:gui.yellow‖"0"‖end‖ 时移除指定职业中的指定装备，否则视为添加。使用 ‖color:gui.orange‖,‖end‖ 分隔符可以指定多个职业和装备。</entitydescription.dfc_addorremovegear>
+  <entityname.dfc_teleporter>传送点</entityname.dfc_teleporter>
+  <entitydescription.dfc_teleporter>用于传送角色，须要接线才能使其运转，它没有实际的贴图，但可以调整其交互范围以及传送开关，通常可以摆放其他的装饰物作为该传送点的外观。当由某个角色产生的信号发送到了传送点的信号输入时，该角色将被传送至该传送点的位置。</entitydescription.dfc_teleporter>
+  <entityname.dfc_datagetter>数据获取器(遗弃的)</entityname.dfc_datagetter>
+  <entitydescription.dfc_datagetter>它接受一个信号，并根据当前组件的索引 ‖color:gui.yellow‖DataIndex‖end‖ 获取一个全局数据，如果获取的值为空，则会自动为其分配一个默认值 ‖color:gui.yellow‖DefaultData‖end‖。</entitydescription.dfc_datagetter>
+  <entityname.dfc_datasetter>数据设置器(遗弃的)</entityname.dfc_datasetter>
+  <entitydescription.dfc_datasetter>它接受一个信号，并将其信号值存储至当前组件的索引 ‖color:gui.yellow‖DataIndex‖end‖ 中。</entitydescription.dfc_datasetter>
+  <entityname.dfc_regionincluded>包含区域</entityname.dfc_regionincluded>
+  <entitydescription.dfc_regionincluded></entitydescription.dfc_regionincluded>
+  <entityname.dfc_regionexcluded>不包含区域</entityname.dfc_regionexcluded>
+  <entitydescription.dfc_regionexcluded></entitydescription.dfc_regionexcluded>
+  <entityname.dfc_characterchecker>角色检查器</entityname.dfc_characterchecker>
+  <entitydescription.dfc_characterchecker>通过链接(link) ‖color:0.2,0.2,1.0‖包含区域‖color:end‖ 或 ‖color:0.4,0.4,0.4‖不包含区域‖color:end‖ 组成区域，在接收到信号后，会输出该区域内匹配条件的‖color:gui.blue‖角色总数‖end‖。</entitydescription.dfc_characterchecker>
+  <entityname.dfc_charactersinglechecker>角色检查器(单个)</entityname.dfc_charactersinglechecker>
+  <entitydescription.dfc_charactersinglechecker>接受一个由角色发出的信号，如果该角色匹配相应条件，将以该角色作为源分别发送‖color:gui.blue‖信号值、角色GUID、角色名称、角色种名、角色组别、角色标记‖end‖。</entitydescription.dfc_charactersinglechecker>
+  <entityname.dfc_actionendgame>动作—结束游戏</entityname.dfc_actionendgame>
+  <entitydescription.dfc_actionendgame>在接收到信号以后结束本次巡回。</entitydescription.dfc_actionendgame>
+  <entityname.dfc_actionsendchatmessage>动作—发送聊天消息</entityname.dfc_actionsendchatmessage>
+  <entitydescription.dfc_actionsendchatmessage>在接收到信号后向玩家发送消息，通过设置属性来过滤出可收到消息的玩家。</entitydescription.dfc_actionsendchatmessage>
+  <entityname.dfc_evententerleaveregion>事件—进出区域</entityname.dfc_evententerleaveregion>
+  <entitydescription.dfc_evententerleaveregion>通过链接(link) ‖color:0.2,0.2,1.0‖包含区域‖color:end‖ 或 ‖color:0.4,0.4,0.4‖不包含区域‖color:end‖ 组成区域，当有角色进入或离开该区域后，会以该角色作为源并发送六个信号，分别为‖color:gui.blue‖角色GUID(Globally Unique Identifier: 全局唯一标识符, 用于唯一标识某个实体的256位字符串)、角色名称、角色种名、角色组别、角色标记、“0”或“1”(“0”表示离开，“1”表示进入)‖end‖。</entitydescription.dfc_evententerleaveregion>
+  <entityname.dfc_eventcharacterdeath>事件—死亡</entityname.dfc_eventcharacterdeath>
+  <entitydescription.dfc_eventcharacterdeath>当有角色死亡时，会以该角色作为源并发送十个信号，分别为‖color:gui.blue‖死者GUID、死者名称、死者种名、死者组别、死者标记、凶手GUID、凶手名称、凶手种名、凶手组别、凶手标记‖end‖。</entitydescription.dfc_eventcharacterdeath>
+  <entityname.dfc_characterresponder>角色响应器</entityname.dfc_characterresponder>
+  <entitydescription.dfc_characterresponder>属性‖color:gui.yellow‖Chunk 应答回调‖end‖存储了一个lua脚本的编程块(chunk/block)，该组件在接受到信号之后，如若查找到发送该信号的角色，则会对该角色执行脚本函数。支持通过链接(link) ‖color:0.2,0.2,1.0‖包含区域‖color:end‖ 或 ‖color:0.4,0.4,0.4‖不包含区域‖color:end‖ 组成区域，并将脚本函数应用于该区域内所有通过匹配的角色。</entitydescription.dfc_characterresponder>
+  <entityname.dfc_charactercleaner>角色清除器</entityname.dfc_charactercleaner>
+  <entitydescription.dfc_charactercleaner>在引脚‖color:gui.blue‖signal_in‖end‖接收到信号后，会对其搜索到的所有待清除角色记录一次，如果目标的记录次数达到了给定次数，则将其清除，适当地合理使用可以缓解游戏不必要的卡顿，可以链接(link) ‖color:0.2,0.2,1.0‖包含区域‖color:end‖ 或 ‖color:0.4,0.4,0.4‖不包含区域‖color:end‖ 以用于约束角色的搜索范围。</entitydescription.dfc_charactercleaner>
+  <entityname.dfc_itemcleaner>物品清除器</entityname.dfc_itemcleaner>
+  <entitydescription.dfc_itemcleaner>在引脚‖color:gui.blue‖signal_in‖end‖接收到信号后，会对其搜索到的所有待清除物品记录一次，如果物品的记录次数达到了给定次数，则将其清除，适当地合理使用可以缓解游戏不必要的卡顿。构建一个清除规则的表达式需要定义至少一个标签组，以逗号 ‖color:gui.orange‖,‖end‖ 作为分隔符可以添加多个标签组，在标签组内也可以使用竖线 ‖color:gui.orange‖|‖end‖ 定义一个组内标签，当物品的‖color:gui.yellow‖标签Tags‖end‖或‖color:gui.yellow‖标识符identifier‖end‖匹配了其中一个标签组的所有组内标签时，则会被记录一次。</entitydescription.dfc_itemcleaner>
+  <entityname.dfc_itembuilder>物品生成器</entityname.dfc_itembuilder>
+  <entitydescription.dfc_itembuilder>属性‖color:gui.yellow‖Item Builds 物品构建集‖end‖存储了一个lua脚本的Table，用于描述物品生成信息，该组件在接受到信号之后，会查找该信号的发送者，如若找到发送信号的角色，则将物品生成在角色身上，否则生成在该物品生成器所在的位置，通过链接(link) ‖color:0.2,0.2,1.0‖包含区域‖color:end‖ 可以改变物品生成的位置。</entitydescription.dfc_itembuilder>
+  <entityname.dfc_itembatch>物品批处理器</entityname.dfc_itembatch>
+  <entitydescription.dfc_itembatch>属性‖color:gui.yellow‖Item Batch Unit 批处理单元‖end‖存储了一个lua脚本的Table，用于描述物品批处理过程，该组件在接受到信号之后，会对其链接(link)的所有物品进行批处理，除此之外还会查找该信号的发送者，如若找到发送信号的角色，则也会对角色身上的物品进行批处理。</entitydescription.dfc_itembatch>
+  <entityname.dfc_luacomponent>Lua组件</entityname.dfc_luacomponent>
+  <entityname.dfc_luacomponent16io>Lua组件16IO口</entityname.dfc_luacomponent16io>
+  <entitydescription.dfc_luacomponent>‖color:gui.yellow‖inp[]‖end‖ 用作接受信号输入&#xA;‖color:gui.yellow‖out[]‖end‖ 用作产生信号输出&#xA;‖color:gui.yellow‖mem[]‖end‖ 用作寄存临时数据&#xA;‖color:gui.yellow‖flip‖end‖ 判断所在潜艇是否翻转&#xA;‖color:gui.yellow‖sender[]‖end‖ 用于获取对应的发送者</entitydescription.dfc_luacomponent>
+
+  <entityname.dfc_scriptwearabledyeing>可穿戴物染色脚本</entityname.dfc_scriptwearabledyeing>
+  <entitydescription.dfc_scriptwearabledyeing>当角色穿戴物品时，可以改变该物品的颜色。</entitydescription.dfc_scriptwearabledyeing>
+  <entityname.dfc_scriptwifiinitializer>WIFI初始化脚本</entityname.dfc_scriptwifiinitializer>
+  <entitydescription.dfc_scriptwifiinitializer>当任何带有wifi组件的物品被创建后，可以改变其 ‖color:gui.yellow‖wifi频道‖end‖ 和 ‖color:gui.yellow‖所属队伍‖end‖，通过链接(link) ‖color:0.2,0.2,1.0‖包含区域‖color:end‖ 或 ‖color:0.4,0.4,0.4‖不包含区域‖color:end‖ 用于匹配物品生成的位置，也支持通过与 ‖color:0.1,0.5,0.5‖物品清除器‖color:end‖ 相同的表达式规则限制物品的标识符和标签。</entitydescription.dfc_scriptwifiinitializer>
+  <entityname.dfc_scriptsubmarinelocker>潜艇锁定器脚本</entityname.dfc_scriptsubmarinelocker>
+  <entitydescription.dfc_scriptsubmarinelocker>锁定所有的潜艇位置。</entitydescription.dfc_scriptsubmarinelocker>
+
+  <entityname.dfc_blocker>阻断器</entityname.dfc_blocker>
+  <entityname.dfc_platform>平台</entityname.dfc_platform>
+
+  <subcategory.dfc>派系工艺</subcategory.dfc>
+
+  <connection.complie>编译</connection.complie>
+  <connection.setindex>设置索引</connection.setindex>
+  <connection.getdata>获取数据</connection.getdata>
+  <connection.setdata>设置数据</connection.setdata>
+
+  <sp.dfcteleporter.disableteleportdraggedcharacter.description>禁止传送被拖拽的角色。</sp.dfcteleporter.disableteleportdraggedcharacter.description>
+  <sp.dfcteleporter.teleportable.description>当值为假时，角色无法被传送至该点，可由信号设置。</sp.dfcteleporter.teleportable.description>
+  <sp.dfcteleporter.cooldown.description>传送后需要等待的全局冷却时间，而非为每个角色单独计算冷却。</sp.dfcteleporter.cooldown.description>
+  <sp.dfcsynchronous.allowsynchronization.description>允许在联机同步信号输出（如果无必要，建议禁用）。</sp.dfcsynchronous.allowsynchronization.description>
+  <sp.dfcsynchronous.synchinterval.description>同步间隔（秒）</sp.dfcsynchronous.synchinterval.description>
+  <sp.dfcluacomponent.isolation.description>隔离脚本环境</sp.dfcluacomponent.isolation.description>
+  <sp.dfcluacomponent.chunk.description>编程块，由lua语句组成，函数原型预声明，实参inp引用了一个数组，使用输入引脚的序号索引对应接受到的信号值；实参out引用了一个数组，使用输出引脚的序号存储键值以在对应的引脚输出信号值；实参mem引用了一个Table，可以寄存数据；实参flip表示组件是否为X轴翻转状态。</sp.dfcluacomponent.chunk.description>
+  <sp.dfcluacomponent.jsonstoredata.description>一个json数据，在游戏初始化后将json数据转换成Table并存储至mem。</sp.dfcluacomponent.jsonstoredata.description>
+  <sp.dfccharacterresponder.chunk.description>要求返回一个Lua脚本的(闭包)函数，被响应的角色会传入该函数的第一个参数。</sp.dfccharacterresponder.chunk.description>
+  <sp.dfccharacterresponder.canresponse.description>是否可以响应？</sp.dfccharacterresponder.canresponse.description>
+  <sp.dfccharacterresponder.applytosender.description>是否应用给信号的发送者？</sp.dfccharacterresponder.applytosender.description>
+  <sp.dfccharacterresponder.charactertargettype.description>角色类型</sp.dfccharacterresponder.charactertargettype.description>
+  <sp.dfccharacterresponder.characterspeciesnames.description>角色种名</sp.dfccharacterresponder.characterspeciesnames.description>
+  <sp.dfccharacterresponder.charactergroup.description>角色组别</sp.dfccharacterresponder.charactergroup.description>
+  <sp.dfccharacterresponder.charactertags.description>角色标记</sp.dfccharacterresponder.charactertags.description>
+  <sp.dfccharacterresponder.group.description>该值相同的角色响应器会被分到同一组，如果角色被该组内的某个角色响应器应用过某个脚本函数，则无法再次响应，如果该属性值为空，则无限制。</sp.dfccharacterresponder.group.description>
+  <sp.dfccharacterresponder.identifier.description>标识符</sp.dfccharacterresponder.identifier.description>
+  <sp.dfccharactercleaner.tolerancethreshold.description>角色记录次数达到该阈值时将被清除。</sp.dfccharactercleaner.tolerancethreshold.description>
+  <sp.dfccharactercleaner.charactertargettype.description>角色类型</sp.dfccharactercleaner.charactertargettype.description>
+  <sp.dfccharactercleaner.characterspeciesnames.description>角色种名</sp.dfccharactercleaner.characterspeciesnames.description>
+  <sp.dfccharactercleaner.charactergroup.description>角色组别</sp.dfccharactercleaner.charactergroup.description>
+  <sp.dfccharactercleaner.charactertags.description>角色标记</sp.dfccharactercleaner.charactertags.description>
+  <sp.dfcitemcleaner.weakcleanpatternincludes.description>弱清理包含</sp.dfcitemcleaner.weakcleanpatternincludes.description>
+  <sp.dfcitemcleaner.weakcleanpatternexcludes.description>弱清理不包含</sp.dfcitemcleaner.weakcleanpatternexcludes.description>
+  <sp.dfcitemcleaner.strongcleanpatternincludes.description>强清理包含</sp.dfcitemcleaner.strongcleanpatternincludes.description>
+  <sp.dfcitemcleaner.strongcleanpatternexcludes.description>强清理不包含</sp.dfcitemcleaner.strongcleanpatternexcludes.description>
+  <sp.dfcitemcleaner.tolerancethreshold.description>容忍阈值，当物品被记录的次数达到该值时将被清除。</sp.dfcitemcleaner.tolerancethreshold.description>
+  <sp.dfcitemcleaner.onlyindoor.description>仅清除在室内的物品。</sp.dfcitemcleaner.onlyindoor.description>
+  <sp.dfcitemcleaner.ignoreattached.description>忽略安装在墙壁上的物品。</sp.dfcitemcleaner.ignoreattached.description>
+  <sp.dfcitemcleaner.ignorestaticbody.description>忽略静态物品（导航终端,引擎,接线盒……）。</sp.dfcitemcleaner.ignorestaticbody.description>
+  <sp.dfcitemcleaner.ignoreinitial.description>忽略在巡回开始时加载的物品。</sp.dfcitemcleaner.ignoreinitial.description>
+  <sp.dfcitembuilder.itembuilds.description>要求返回一个Lua脚本Table类型的值，用于描述物品生成信息。</sp.dfcitembuilder.itembuilds.description>
+  <sp.dfcitembuilder.canspawn.description>是否可以生成物品？</sp.dfcitembuilder.canspawn.description>
+  <sp.dfcitembuilder.onlyspawninlinkedto.description>仅生成在链接的物品上。</sp.dfcitembuilder.onlyspawninlinkedto.description>
+  <sp.dfcitembuilder.amount.description>物品生成的剩余次数。</sp.dfcitembuilder.amount.description>
+  <sp.dfcitembuilder.forcespawnatpositions.description>强制生成在即将被确定的某个位置，而不是角色身上。</sp.dfcitembuilder.forcespawnatpositions.description>
+  <sp.dfcitembuilder.requiredsender.description>要求发送者存在。</sp.dfcitembuilder.requiredsender.description>
+  <sp.dfcitembuilder.sendertargettype.description>发送者类型</sp.dfcitembuilder.sendertargettype.description>
+  <sp.dfcitembuilder.senderspeciesnames.description>发送者种名</sp.dfcitembuilder.senderspeciesnames.description>
+  <sp.dfcitembuilder.sendergroup.description>发送者组别</sp.dfcitembuilder.sendergroup.description>
+  <sp.dfcitembuilder.sendertags.description>发送者标记</sp.dfcitembuilder.sendertags.description>
+  <sp.dfcitembuilder.group.description>该值相同的物品生成器会被分到同一组，如果角色触发过该组内的某个物品生成器，则无法生成，如果该属性值为空，则无限制。</sp.dfcitembuilder.group.description>
+  <sp.dfcitembuilder.identifier.description>标识符</sp.dfcitembuilder.identifier.description>
+  <sp.dfcitembatch.itembatchunit.description>要求返回一个Lua脚本Table类型的值，用于描述物品批处理过程。</sp.dfcitembatch.itembatchunit.description>
+  <sp.dfcitembatch.canbatch.description>是否可以批处理物品？</sp.dfcitembatch.canbatch.description>
+  <sp.dfcitembatch.amount.description>物品批处理的剩余次数。</sp.dfcitembatch.amount.description>
+  <sp.dfcitembatch.onlybatchlinkedto.description>仅对链接的物品进行批处理。</sp.dfcitembatch.onlybatchlinkedto.description>
+  <sp.dfcitembatch.requiredsender.description>要求发送者存在。</sp.dfcitembatch.requiredsender.description>
+  <sp.dfcitembatch.sendertargettype.description>发送者类型</sp.dfcitembatch.sendertargettype.description>
+  <sp.dfcitembatch.senderspeciesnames.description>发送者种名</sp.dfcitembatch.senderspeciesnames.description>
+  <sp.dfcitembatch.sendergroup.description>发送者组别</sp.dfcitembatch.sendergroup.description>
+  <sp.dfcitembatch.sendertags.description>发送者标记</sp.dfcitembatch.sendertags.description>
+  <sp.dfcitembatch.group.description>该值相同的物品批处理器会被分到同一组，如果角色触发过该组内的某个物品批处理器，则无法生成，如果该属性值为空，则无限制。</sp.dfcitembatch.group.description>
+  <sp.dfcitembatch.identifier.description>标识符</sp.dfcitembatch.identifier.description>
+  <sp.dfcevententerleaveregion.charactertargettype.description>角色类型</sp.dfcevententerleaveregion.charactertargettype.description>
+  <sp.dfcevententerleaveregion.characterspeciesnames.description>角色种名</sp.dfcevententerleaveregion.characterspeciesnames.description>
+  <sp.dfcevententerleaveregion.charactergroup.description>角色组别</sp.dfcevententerleaveregion.charactergroup.description>
+  <sp.dfcevententerleaveregion.charactertags.description>角色标记</sp.dfcevententerleaveregion.charactertags.description>
+  <sp.dfcevententerleaveregion.minimumvelocity.description>最低速度（m/s）</sp.dfcevententerleaveregion.minimumvelocity.description>
+  <sp.dfcevententerleaveregion.matchafterleave.description>要求在角色离开时匹配。</sp.dfcevententerleaveregion.matchafterleave.description>
+  <sp.dfceventcharacterdeath.deathtargettype.description>死者类型</sp.dfceventcharacterdeath.deathtargettype.description>
+  <sp.dfceventcharacterdeath.deathspeciesnames.description>死者种名</sp.dfceventcharacterdeath.deathspeciesnames.description>
+  <sp.dfceventcharacterdeath.deathgroup.description>死者组别</sp.dfceventcharacterdeath.deathgroup.description>
+  <sp.dfceventcharacterdeath.deathtags.description>死者标记</sp.dfceventcharacterdeath.deathtags.description>
+  <sp.dfceventcharacterdeath.killertargettype.description>凶手类型</sp.dfceventcharacterdeath.killertargettype.description>
+  <sp.dfceventcharacterdeath.killerspeciesnames.description>凶手种名</sp.dfceventcharacterdeath.killerspeciesnames.description>
+  <sp.dfceventcharacterdeath.killergroup.description>凶手组别</sp.dfceventcharacterdeath.killergroup.description>
+  <sp.dfceventcharacterdeath.killertags.description>杀手标记</sp.dfceventcharacterdeath.killertags.description>
+  <sp.dfcdatasetter.dataindex.description>数据索引，用于设置对应数据。</sp.dfcdatasetter.dataindex.description>
+  <sp.dfcdatagetter.dataindex.description>数据索引，用于获取对应数据。</sp.dfcdatagetter.dataindex.description>
+  <sp.dfcdatagetter.defaultdata.description>当获取的数据不存在时，默认为该数据自动分配一个默认值。</sp.dfcdatagetter.defaultdata.description>
+  <sp.dfccharacterchecker.charactertargettype.description>角色类型</sp.dfccharacterchecker.charactertargettype.description>
+  <sp.dfccharacterchecker.characterspeciesnames.description>角色种名</sp.dfccharacterchecker.characterspeciesnames.description>
+  <sp.dfccharacterchecker.charactergroup.description>角色组别</sp.dfccharacterchecker.charactergroup.description>
+  <sp.dfccharacterchecker.charactertags.description>角色标记</sp.dfccharacterchecker.charactertags.description>
+  <sp.dfccharacterchecker.minimumvelocity.description>最低速度（m/s）</sp.dfccharacterchecker.minimumvelocity.description>
+  <sp.dfccharactersinglechecker.charactertargettype.description>角色类型</sp.dfccharactersinglechecker.charactertargettype.description>
+  <sp.dfccharactersinglechecker.characterspeciesnames.description>角色种名</sp.dfccharactersinglechecker.characterspeciesnames.description>
+  <sp.dfccharactersinglechecker.charactergroup.description>角色组别</sp.dfccharactersinglechecker.charactergroup.description>
+  <sp.dfccharactersinglechecker.charactertags.description>角色标记</sp.dfccharactersinglechecker.charactertags.description>
+  <sp.dfcactionsendchatmessage.onlysenderreceivable.description>只有发送者才可以接收到消息。</sp.dfcactionsendchatmessage.onlysenderreceivable.description>
+  <sp.dfcactionsendchatmessage.senderreceiverrelation.description>发送者与接受者之间的关系。</sp.dfcactionsendchatmessage.senderreceiverrelation.description>
+  <sp.dfcactionsendchatmessage.sendertargettype.description>发送者类型</sp.dfcactionsendchatmessage.sendertargettype.description>
+  <sp.dfcactionsendchatmessage.senderspeciesnames.description>发送者种名</sp.dfcactionsendchatmessage.senderspeciesnames.description>
+  <sp.dfcactionsendchatmessage.sendergroup.description>发送者组别</sp.dfcactionsendchatmessage.sendergroup.description>
+  <sp.dfcactionsendchatmessage.sendertags.description>发送者标记</sp.dfcactionsendchatmessage.sendertags.description>
+  <sp.dfcactionsendchatmessage.receivertargettype.description>接受者类型</sp.dfcactionsendchatmessage.receivertargettype.description>
+  <sp.dfcactionsendchatmessage.receiverspeciesnames.description>接受者种名</sp.dfcactionsendchatmessage.receiverspeciesnames.description>
+  <sp.dfcactionsendchatmessage.receivergroup.description>接受者组别</sp.dfcactionsendchatmessage.receivergroup.description>
+  <sp.dfcactionsendchatmessage.receivertags.description>接受者标记</sp.dfcactionsendchatmessage.receivertags.description>
+  <sp.dfcactionsendchatmessage.spectatorreceivable.description>观看者可收到消息。</sp.dfcactionsendchatmessage.spectatorreceivable.description>
+  <sp.dfcactionsendchatmessage.spectatoronlyreceivable.description>仅观看者可收到消息。</sp.dfcactionsendchatmessage.spectatoronlyreceivable.description>
+  <sp.dfcscriptwearabledyeing.spritecolor.description>贴图颜色</sp.dfcscriptwearabledyeing.spritecolor.description>
+  <sp.dfcscriptwearabledyeing.inventoryiconcolor.description>图标颜色</sp.dfcscriptwearabledyeing.inventoryiconcolor.description>
+  <sp.dfcscriptwearabledyeing.matcherpatternincludes.description>包含规则</sp.dfcscriptwearabledyeing.matcherpatternincludes.description>
+  <sp.dfcscriptwearabledyeing.matcherpatternexcludes.description>不包含规则</sp.dfcscriptwearabledyeing.matcherpatternexcludes.description>
+  <sp.dfcscriptwearabledyeing.invslottypes.description>槽位类型</sp.dfcscriptwearabledyeing.invslottypes.description>
+  <sp.dfcscriptwearabledyeing.wearertargettype.description>穿戴者类型</sp.dfcscriptwearabledyeing.wearertargettype.description>
+  <sp.dfcscriptwearabledyeing.wearerspeciesnames.description>穿戴者种名</sp.dfcscriptwearabledyeing.wearerspeciesnames.description>
+  <sp.dfcscriptwearabledyeing.wearergroup.description>穿戴者组别</sp.dfcscriptwearabledyeing.wearergroup.description>
+  <sp.dfcscriptwearabledyeing.wearertags.description>穿戴者标记</sp.dfcscriptwearabledyeing.wearertags.description>
+  <sp.dfcscriptwifiinitializer.wifichannelrange.description>wifi通道随机值获取的范围。</sp.dfcscriptwifiinitializer.wifichannelrange.description>
+  <sp.dfcscriptwifiinitializer.alwayscalculaterandomchannel.description>是否总是重新计算随机通道？</sp.dfcscriptwifiinitializer.alwayscalculaterandomchannel.description>
+  <sp.dfcscriptwifiinitializer.teamid.description>所属队伍</sp.dfcscriptwifiinitializer.teamid.description>
+
+  <entityname.dfc_vanillaentityspawnercomponent>香草版实体生成器组件</entityname.dfc_vanillaentityspawnercomponent>
+  <entitydescription.dfc_vanillaentityspawnercomponent></entitydescription.dfc_vanillaentityspawnercomponent>
+
+  <entityname.dfc_whiteback>白背</entityname.dfc_whiteback>
+  <entitydescription.dfc_whiteback></entitydescription.dfc_whiteback>
+  <entityname.dfc_solidlight>固体光</entityname.dfc_solidlight>
+  <entitydescription.dfc_solidlight></entitydescription.dfc_solidlight>
+</infotexts>
