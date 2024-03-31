@@ -23,7 +23,7 @@ namespace DSSIFactionCraft
             Alive = 0x080,
             Dead = 0x100,
             OnlyIndoor = 0x200,
-            Any = Human | Monster | Pet | Team1 | Team2 | FriendlyNPC | Alive | Dead | OnlyIndoor,
+            Any = Human | Monster | Pet | Team1 | Team2 | FriendlyNPC | Alive | Dead,
         }
 
         public static Dictionary<Character, Guid> GUID;
