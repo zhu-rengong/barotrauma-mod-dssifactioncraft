@@ -15,6 +15,11 @@
       - [☑ 添加或移除职业(dfc\_addorremovejob) C#组件(DfcAddOrRemoveJob)](#-添加或移除职业dfc_addorremovejob-c组件dfcaddorremovejob)
       - [☑ 添加或移除装备(dfc\_addorremovegear) C#组件(DfcAddOrRemoveGear)](#-添加或移除装备dfc_addorremovegear-c组件dfcaddorremovegear)
       - [☑ Lua组件(dfc\_luacomponent) C#组件(DfcLuaComponent)](#-lua组件dfc_luacomponent-c组件dfcluacomponent)
+      - [☑ Lua组件2代(dfc\_lua2component) C#组件(DfcLua2Component)](#-lua组件2代dfc_lua2component-c组件dfclua2component)
+        - [Chunk块所在作用域包含的变量列表](#chunk块所在作用域包含的变量列表)
+        - [示例一](#示例一)
+        - [示例二](#示例二)
+        - [示例三](#示例三)
       - [☑ 传送点(dfc\_teleporter) C#组件(DfcTeleporter)](#-传送点dfc_teleporter-c组件dfcteleporter)
       - [☑ 数据获取器(dfc\_datagetter) C#组件(DfcDataGetter)](#-数据获取器dfc_datagetter-c组件dfcdatagetter)
       - [☑ 数据设置器(dfc\_datasetter) C#组件(DfcDataSetter)](#-数据设置器dfc_datasetter-c组件dfcdatasetter)
@@ -99,11 +104,74 @@
 #### ☑ Lua组件(dfc_luacomponent) C#组件(DfcLuaComponent)
 Ctrl+CV自[RGzXTrauma](https://steamcommunity.com/sharedfiles/filedetails/?id=2937571024)模组，并且优化和解决了编译错误。
 
+#### ☑ Lua组件2代(dfc_lua2component) C#组件(DfcLua2Component)
+方案源自工坊模组MicroLua: https://steamcommunity.com/sharedfiles/filedetails/?id=3018125421
+拥有32个并排IO，通过闭包上下文访问upvalues，减轻了性能负担，并撤除了环境约束。
+##### Chunk块所在作用域包含的变量列表
+- **luaItem**: lua组件本身，类型为Barotrauma.Item
+- **inp**: 由用户在chunk中定义，用于访问输入的信号值，类型为table\<integer, string|number\>或fun(i: integer, v:string|number)
+- **out**: 包装了lua组件的userdata，在代码中执行setindex操作，用于控制信号输出
+- **clear**: 清空table的函数，原型fun(t: table)
+
+##### 示例一
+```lua
+-- 定义inp（可为`nil`），勿使用local声明，因为符号`inp`的变量已被预先声明为局部变量，其类型为`table<integer, string|number>`；
+-- 在表域内，键为引脚序号（输入），值为对应引脚序号所接受到的信号值。
+inp = {}
+
+local 逝去时间 = 0.0
+
+-- 定义upd（可为`nil`），同上，勿使用local声明；
+-- 在该组件更新时调用，参数`deltaTime`为更新周期
+function upd(deltaTime)
+    逝去时间 = 逝去时间 + deltaTime
+
+    -- 如果signal_in1引脚接受到信号
+    if inp[1] ~= nil then
+        -- 从signal_out1引脚输出逝去时间，会立即输出该信号，而不是像1代的lua组件一样等到更新结束之后再输出
+        out[1] = 逝去时间
+        -- inp并不会被自动清除，需要手动清除inp[1]
+        inp[1] = nil
+    end
+
+    -- 如果signal_in2引脚接受到信号
+    if inp[2] then
+        -- 函数清空inp表
+        clear(inp)
+        -- 时间复位
+        逝去时间 = 0.0
+    end
+end
+```
+##### 示例二
+```lua
+-- inp也可以被定义成原型为`fun(i, v)`的函数；
+-- 在接受到信号时回调，参数`i`为引脚序号（输入），`v`为对应引脚序号所接受到的信号值。
+function inp(i, v)
+    if i == 1 then
+        out[1] = 逝去时间
+    end
+    if i == 2 then
+        逝去时间 = 0.0
+    end
+end
+
+function upd(deltaTime)
+    逝去时间 = 逝去时间 + deltaTime
+end
+```
+##### 示例三
+```lua
+-- 你也可以不用定义inp和upd，直接运行一段代码
+print(("物品总数：%i"):format(#Item.ItemList))
+print(("Lua组件位置：%s"):format(tostring(luaItem.WorldPosition)))
+print("初始化完成")
+```
+
 #### ☑ 传送点(dfc_teleporter) C#组件(DfcTeleporter)
 与[ZDoor](https://steamcommunity.com/sharedfiles/filedetails/?id=2902757031)模组以及PVP服使用的传送门类似，交互时可以传送角色，须要接线才能使其运转，有所不同的是它没有实际的贴图，但可以调整其交互范围以及传送开关，通常可以摆放其他的装饰物作为该传送点的外观。
 当由某个角色产生的信号发送到了传送点的**信号输入**时，该角色将被传送至该传送点的位置。
 该组件拥有以下属性用于控制传送逻辑：
-
 1. **Disable Teleport Dragged Character**: 禁止传送被拖拽的角色
 2. **TeleportAble**: 当值为假时，角色无法被传送至该点，可由信号设置
 3. **Cooldown**: 传送后需要等待的全局冷却时间，而非为每个角色单独计算冷却

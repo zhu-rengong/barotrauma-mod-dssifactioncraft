@@ -51,6 +51,8 @@
   <entityname.dfc_luacomponent>Lua组件</entityname.dfc_luacomponent>
   <entityname.dfc_luacomponent16io>Lua组件16IO口</entityname.dfc_luacomponent16io>
   <entitydescription.dfc_luacomponent>‖color:gui.yellow‖inp[]‖end‖ 用作接受信号输入&#xA;‖color:gui.yellow‖out[]‖end‖ 用作产生信号输出&#xA;‖color:gui.yellow‖mem[]‖end‖ 用作寄存临时数据&#xA;‖color:gui.yellow‖flip‖end‖ 判断所在潜艇是否翻转&#xA;‖color:gui.yellow‖sender[]‖end‖ 用于获取对应的发送者</entitydescription.dfc_luacomponent>
+  <entityname.dfc_lua2component>Lua组件2代</entityname.dfc_lua2component>
+  <entitydescription.dfc_lua2component>拥有32个并排IO，通过闭包上下文访问upvalues，减轻了性能负担，并撤除了环境约束。</entitydescription.dfc_lua2component>
 
   <entityname.dfc_scriptwearabledyeing>可穿戴物染色脚本</entityname.dfc_scriptwearabledyeing>
   <entitydescription.dfc_scriptwearabledyeing>当角色穿戴物品时，可以改变该物品的颜色。</entitydescription.dfc_scriptwearabledyeing>

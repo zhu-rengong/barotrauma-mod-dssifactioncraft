@@ -3,6 +3,7 @@
   <Item file="%ModDir%/DFC/MapDevTools/lights.xml" />
   <Item file="%ModDir%/DFC/MapDevTools/tools.xml" />
   <Item file="%ModDir%/DFC/MapDevTools/luacomponent.xml" />
+  <Item file="%ModDir%/DFC/MapDevTools/lua2component.xml" />
   <Structure file="%ModDir%/DFC/Map/StructurePrefabs.xml" />
   <Text file="%ModDir%/DFC/Texts/English.xml" />
   <Text file="%ModDir%/DFC/Texts/SimplifiedChinese.xml" />
