@@ -1,5 +1,4 @@
-// SPDX-FileCopyrightText: 2023 Matheus Izvekov <mizvekov@gmail.com>
-// SPDX-License-Identifier: ISC
+// Credit: MicroLua (https://steamcommunity.com/sharedfiles/filedetails/?id=3018125421)
 
 using Barotrauma;
 using Barotrauma.Items.Components;
@@ -25,6 +24,8 @@ namespace DSSIFactionCraft
         private const string PARAMETER_NAME_SYNC = nameof(sync);
         private const string UPVALUE_NAME_UPD = nameof(upd);
         private const string UPVALUE_NAME_INP = nameof(inp);
+        private const string UPVALUE_NAME_SENDER = nameof(sender);
+        private const string UPVALUE_NAME_SENDERS = nameof(senders);
         private readonly static Regex inpRegex = new Regex(@"^signal_in(\d+)$");
         private readonly static Regex outRegex = new Regex(@"^signal_out(\d+)$");
 
@@ -40,6 +41,8 @@ namespace DSSIFactionCraft
         private Script? script;
         private DynValue? upd;
         private DynValue? inp;
+        private DynValue? sender;
+        private DynValue? senders;
 
         private void HandleException(string source, InterpreterException e, bool stop = false)
         {
@@ -52,6 +55,8 @@ namespace DSSIFactionCraft
             script = null;
             upd = null;
             inp = null;
+            sender = null;
+            senders = null;
             IsActive = false;
         }
 
@@ -78,12 +83,13 @@ namespace DSSIFactionCraft
                 try
                 {
                     var externalFunction = script.DoString($@"
-return function({PARAMETER_NAME_LUA_ITEM}, {PARAMETER_NAME_OUT}, {PARAMETER_NAME_CLEAR}, {PARAMETER_NAME_SYNC}) local {UPVALUE_NAME_UPD}, {UPVALUE_NAME_INP}
+return function({PARAMETER_NAME_LUA_ITEM}, {PARAMETER_NAME_OUT}, {PARAMETER_NAME_CLEAR}, {PARAMETER_NAME_SYNC}) local {UPVALUE_NAME_UPD}, {UPVALUE_NAME_INP}, {UPVALUE_NAME_SENDER}, {UPVALUE_NAME_SENDERS}
 {chunk}
-return function() return {UPVALUE_NAME_UPD}, {UPVALUE_NAME_INP} end
+return function() return {UPVALUE_NAME_UPD}, {UPVALUE_NAME_INP}, {UPVALUE_NAME_SENDER}, {UPVALUE_NAME_SENDERS} end
 end", codeFriendlyName: null);
 
-                    var outUserData = UserData.Create(new Out(this));
+                    var @out = new Out(this);
+                    var outUserData = UserData.Create(@out);
                     var internalClosure = script.Call(externalFunction,
                         item,
                         outUserData,
@@ -98,11 +104,11 @@ end", codeFriendlyName: null);
                     );
                     upd = nameMapUpvalue[UPVALUE_NAME_UPD];
                     inp = nameMapUpvalue[UPVALUE_NAME_INP];
+                    sender = nameMapUpvalue[UPVALUE_NAME_SENDER];
+                    senders = nameMapUpvalue[UPVALUE_NAME_SENDERS];
+                    @out.Sender = sender;
 
-                    if (upd.Type == DataType.Function)
-                    {
-                        IsActive = true;
-                    }
+                    IsActive = true;
                 }
                 catch (SyntaxErrorException e)
                 {
@@ -129,6 +135,7 @@ end", codeFriendlyName: null);
         {
             private Item item;
             private Dictionary<int, Connection> outPinMapConnection;
+            public DynValue Sender { private get; set; }
 
             public Out([DisallowNull] DfcLua2Component luaComponent)
             {
@@ -156,13 +163,17 @@ end", codeFriendlyName: null);
 
                 var pin = (int)indexNumber;
 
-                var connection = outPinMapConnection[pin] ?? throw new ScriptRuntimeException($"invalid pin {pin}!");
+                if (!outPinMapConnection.TryGetValue(pin, out Connection connection))
+                {
+                    throw new ScriptRuntimeException($"invalid pin {pin}!");
+                }
+
                 item.SendSignal(new Signal(value.Type switch
                 {
                     DataType.Number => value.Number.ToString(CultureInfo.InvariantCulture),
                     DataType.String => value.String,
                     _ => throw new ScriptRuntimeException($"pin {pin} outputs an invalid value type '{value.Type}'!")
-                }), connection);
+                }, sender: (Sender?.IsNotNil() ?? false) ? Sender.ToObject<Character>() : null), connection);
 
                 return true;
             }
@@ -228,16 +239,29 @@ end", codeFriendlyName: null);
 
         public override void Update(float deltaTime, Camera cam)
         {
-            try { script.Call(upd, DynValue.NewNumber(deltaTime)); }
-            catch (ScriptRuntimeException e) { HandleException("upd", e, stop: true); }
+            if (upd.Type != DataType.Function) { return; }
+
+            try
+            {
+                script.Call(upd, DynValue.NewNumber(deltaTime));
+            }
+            catch (ScriptRuntimeException e)
+            {
+                HandleException("upd", e, stop: true);
+            }
         }
 
         public override void ReceiveSignal(Signal signal, Connection connection)
         {
-            if (script == null) { return; }
+            if (!isActive) { return; }
 
             if (inpConnectionMapPin.TryGetValue(connection, out int pin))
             {
+                if (senders.Type == DataType.Table && signal.sender is Character signalSender)
+                {
+                    senders.Table.Set(pin, DynValue.FromObject(script, signalSender));
+                }
+
                 var value = double.TryParse(
                     signal.value,
                     NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
@@ -251,16 +275,19 @@ end", codeFriendlyName: null);
                         inp.Table.Set(pin, value);
                         break;
                     case DataType.Function:
-                        try { script.Call(inp, DynValue.NewNumber(pin), value); }
-                        catch (ScriptRuntimeException e) { HandleException("inp", e, stop: true); }
+                        try
+                        {
+                            script.Call(inp, DynValue.NewNumber(pin), value);
+                        }
+                        catch (ScriptRuntimeException e)
+                        {
+                            HandleException("inp", e, stop: true);
+                        }
                         break;
                     default:
                         break;
                 }
             }
-
         }
-
-
     }
 }

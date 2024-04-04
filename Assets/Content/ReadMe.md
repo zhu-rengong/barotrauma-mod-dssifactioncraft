@@ -108,17 +108,23 @@ Ctrl+CV自[RGzXTrauma](https://steamcommunity.com/sharedfiles/filedetails/?id=29
 方案源自工坊模组MicroLua: https://steamcommunity.com/sharedfiles/filedetails/?id=3018125421
 拥有32个并排IO，通过闭包上下文访问upvalues，减轻了性能负担，并撤除了环境约束。
 ##### Chunk块所在作用域包含的变量列表
-- **luaItem**: lua组件本身，类型为Barotrauma.Item
-- **inp**: 由用户在chunk中定义，用于访问输入的信号值，类型为table\<integer, string|number\>或fun(i: integer, v:string|number)
 - **out**: 包装了lua组件的userdata，在代码中执行setindex操作，用于控制信号输出
+- **luaItem**: lua组件本身，类型为Barotrauma.Item
 - **clear**: 清空table的函数，原型fun(t: table)
 - **sync**: 仅服务器可用，客户端忽略，用于向客户端发送并同步输出信号，该函数接受一个table作为参数，表域内，键为需要执行同步输出的引脚序号，值为信号值
+- **upd**: 更新函数，会传递更新周期作为参数
+- **inp**: 由用户在chunk中定义，用于访问输入的信号值，类型为table\<integer, string|number\>或fun(i: integer, v:string|number)
+- **sender**: 使用out输出信号时设置的发送者
+- **senders**: 用于访问相应引脚接收到的信号的发送者
 
 ##### 示例一
 ```lua
 -- 定义inp（可为`nil`），勿使用local声明，因为符号`inp`的变量已被预先声明为局部变量，其类型为`table<integer, string|number>`；
 -- 在表域内，键为引脚序号（输入），值为对应引脚序号所接受到的信号值。
 inp = {}
+
+-- 定义senders（可为`nil`），同上，勿使用local声明；
+senders = {}
 
 local 逝去时间 = 0.0
 
@@ -129,18 +135,23 @@ function upd(deltaTime)
 
     -- 如果signal_in1引脚接受到信号
     if inp[1] ~= nil then
+        -- 设置信号发送者为signal_in1引脚接受到的信号的发送者
+        sender = senders[1]
         -- 从signal_out1引脚输出逝去时间，会立即输出该信号，而不是像1代的lua组件一样等到更新结束之后再输出
         out[1] = 逝去时间
         -- 服务器发起同步事件，在客户端接受到事件数据后，会从signal_out1输出逝去时间
         sync { [1] = 逝去时间 }
-        -- inp并不会被自动清除，需要手动清除inp[1]
+        -- inp并不会被自动清除，需要手动清除inp[1]，sender和senders也一样
         inp[1] = nil
+        sender = nil
+        senders[1] = nil
     end
 
     -- 如果signal_in2引脚接受到信号
     if inp[2] then
-        -- 函数清空inp表
+        -- 函数清空inp表和senders表
         clear(inp)
+        clear(senders)
         -- 时间复位
         逝去时间 = 0.0
     end
@@ -170,7 +181,7 @@ end
 -- 你也可以不用定义inp和upd，直接运行一段代码
 print(("物品总数：%i"):format(#Item.ItemList))
 print(("Lua组件位置：%s"):format(tostring(luaItem.WorldPosition)))
-print("初始化完成")
+print("初始化完成！")
 ```
 
 #### ☑ 传送点(dfc_teleporter) C#组件(DfcTeleporter)
