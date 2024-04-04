@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Diagnostics.CodeAnalysis;
 using Barotrauma.Extensions;
 using System.Linq;
+using System.Net.NetworkInformation;
 
 namespace DSSIFactionCraft
 {
@@ -177,7 +178,8 @@ end", codeFriendlyName: null);
 
         public override void Update(float deltaTime, Camera cam)
         {
-            script.Call(upd, DynValue.NewNumber(deltaTime));
+            try { script.Call(upd, DynValue.NewNumber(deltaTime)); }
+            catch (ScriptRuntimeException e) { HandleException("upd", e, stop: true); }
         }
 
         public override void ReceiveSignal(Signal signal, Connection connection)
@@ -200,7 +202,7 @@ end", codeFriendlyName: null);
                         break;
                     case DataType.Function:
                         try { script.Call(inp, DynValue.NewNumber(pin), value); }
-                        catch (ScriptRuntimeException e) { HandleException("inp", e); }
+                        catch (ScriptRuntimeException e) { HandleException("inp", e, stop: true); }
                         break;
                     default:
                         break;
