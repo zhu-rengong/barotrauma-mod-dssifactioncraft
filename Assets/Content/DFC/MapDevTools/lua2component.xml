@@ -2,6 +2,42 @@
 <Items>
   <Item name="" identifier="dfc_lua2component" category="Misc" subcategory="dfc" tags="smallitem,dfc_mapdevtool" cargocontaineridentifier="metalcrate" scale="0.5" spritecolor="100,100,255,255" inventoryiconcolor="100,100,255,255" impactsoundtag="impact_metal_light" isshootable="true" resizehorizontal="true" resizevertical="true">
     <Sprite texture="Content/Items/Labels/labels.png" depth="0.850" sourcerect="4,100,28,24" />
+    <ButtonTerminal canbeselected="false" allowingameediting="false">
+      <GuiFrame />
+      <TerminalButton style="" /><!-- 1 -->
+      <TerminalButton style="" /><!-- 2 -->
+      <TerminalButton style="" /><!-- 3 -->
+      <TerminalButton style="" /><!-- 4 -->
+      <TerminalButton style="" /><!-- 5 -->
+      <TerminalButton style="" /><!-- 6 -->
+      <TerminalButton style="" /><!-- 7 -->
+      <TerminalButton style="" /><!-- 8 -->
+      <TerminalButton style="" /><!-- 9 -->
+      <TerminalButton style="" /><!-- 10 -->
+      <TerminalButton style="" /><!-- 11 -->
+      <TerminalButton style="" /><!-- 12 -->
+      <TerminalButton style="" /><!-- 13 -->
+      <TerminalButton style="" /><!-- 14 -->
+      <TerminalButton style="" /><!-- 15 -->
+      <TerminalButton style="" /><!-- 16 -->
+      <TerminalButton style="" /><!-- 17 -->
+      <TerminalButton style="" /><!-- 18 -->
+      <TerminalButton style="" /><!-- 19 -->
+      <TerminalButton style="" /><!-- 20 -->
+      <TerminalButton style="" /><!-- 21 -->
+      <TerminalButton style="" /><!-- 22 -->
+      <TerminalButton style="" /><!-- 23 -->
+      <TerminalButton style="" /><!-- 24 -->
+      <TerminalButton style="" /><!-- 25 -->
+      <TerminalButton style="" /><!-- 26 -->
+      <TerminalButton style="" /><!-- 27 -->
+      <TerminalButton style="" /><!-- 28 -->
+      <TerminalButton style="" /><!-- 29 -->
+      <TerminalButton style="" /><!-- 30 -->
+      <TerminalButton style="" /><!-- 31 -->
+      <TerminalButton style="" /><!-- 32 -->
+    </ButtonTerminal>
+    <ItemContainer canbeselected="false" drawinventory="true" capacity="0" />
     <ConnectionPanel selectkey="Action" canbeselected="true" msg="ItemMsgRewireScrewdriver" hudpriority="10">
       <GuiFrame relativesize="0.2,0.4" minsize="400,350" maxsize="480,420" anchor="Center" style="ConnectionPanel" />
       <RequiredItem items="screwdriver" type="Equipped" />

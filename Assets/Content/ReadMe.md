@@ -112,6 +112,7 @@ Ctrl+CV自[RGzXTrauma](https://steamcommunity.com/sharedfiles/filedetails/?id=29
 - **inp**: 由用户在chunk中定义，用于访问输入的信号值，类型为table\<integer, string|number\>或fun(i: integer, v:string|number)
 - **out**: 包装了lua组件的userdata，在代码中执行setindex操作，用于控制信号输出
 - **clear**: 清空table的函数，原型fun(t: table)
+- **sync**: 仅服务器可用，客户端忽略，用于向客户端发送并同步输出信号，该函数接受一个table作为参数，表域内，键为需要执行同步输出的引脚序号，值为信号值
 
 ##### 示例一
 ```lua
@@ -130,6 +131,8 @@ function upd(deltaTime)
     if inp[1] ~= nil then
         -- 从signal_out1引脚输出逝去时间，会立即输出该信号，而不是像1代的lua组件一样等到更新结束之后再输出
         out[1] = 逝去时间
+        -- 服务器发起同步事件，在客户端接受到事件数据后，会从signal_out1输出逝去时间
+        sync { [1] = 逝去时间 }
         -- inp并不会被自动清除，需要手动清除inp[1]
         inp[1] = nil
     end

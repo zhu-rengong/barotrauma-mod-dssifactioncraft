@@ -19,13 +19,20 @@ namespace DSSIFactionCraft
 {
     partial class DfcLua2Component : ItemComponent
     {
-        private readonly static string PARAMETER_NAME_OUT = "out";
-        private readonly static string PARAMETER_NAME_LUA_ITEM = "luaItem";
-        private readonly static string PARAMETER_NAME_CLEAR = "clear";
-        private readonly static string UPVALUE_NAME_UPD = nameof(upd);
-        private readonly static string UPVALUE_NAME_INP = nameof(inp);
+        private const string PARAMETER_NAME_OUT = "out";
+        private const string PARAMETER_NAME_LUA_ITEM = "luaItem";
+        private const string PARAMETER_NAME_CLEAR = nameof(clear);
+        private const string PARAMETER_NAME_SYNC = nameof(sync);
+        private const string UPVALUE_NAME_UPD = nameof(upd);
+        private const string UPVALUE_NAME_INP = nameof(inp);
         private readonly static Regex inpRegex = new Regex(@"^signal_in(\d+)$");
         private readonly static Regex outRegex = new Regex(@"^signal_out(\d+)$");
+
+        private ButtonTerminal networkComponent;
+        private SerializableProperty signals;
+        private int signalsLength;
+        private ButtonTerminal.EventData[] syncEventDatas;
+        private Item.ChangePropertyEventData signalsChangePropertyEventData;
 
         private Dictionary<int, Connection> outPinMapConnection = new();
         private Dictionary<Connection, int> inpConnectionMapPin = new();
@@ -71,13 +78,17 @@ namespace DSSIFactionCraft
                 try
                 {
                     var externalFunction = script.DoString($@"
-return function({PARAMETER_NAME_LUA_ITEM}, {PARAMETER_NAME_OUT}, {PARAMETER_NAME_CLEAR}) local {UPVALUE_NAME_UPD}, {UPVALUE_NAME_INP}
+return function({PARAMETER_NAME_LUA_ITEM}, {PARAMETER_NAME_OUT}, {PARAMETER_NAME_CLEAR}, {PARAMETER_NAME_SYNC}) local {UPVALUE_NAME_UPD}, {UPVALUE_NAME_INP}
 {chunk}
 return function() return {UPVALUE_NAME_UPD}, {UPVALUE_NAME_INP} end
 end", codeFriendlyName: null);
 
                     var outUserData = UserData.Create(new Out(this));
-                    var internalClosure = script.Call(externalFunction, item, outUserData, (Table t) => t.Clear()).Function;
+                    var internalClosure = script.Call(externalFunction,
+                        item,
+                        outUserData,
+                        DynValue.NewCallback(clear),
+                        DynValue.NewCallback(sync)).Function;
 
                     Dictionary<string, DynValue> nameMapUpvalue = new(
                         Enumerable.Range(0, internalClosure.GetUpvaluesCount())
@@ -116,11 +127,13 @@ end", codeFriendlyName: null);
 
         class Out : IUserDataType
         {
-            private DfcLua2Component parent;
+            private Item item;
+            private Dictionary<int, Connection> outPinMapConnection;
 
-            public Out([DisallowNull] DfcLua2Component parent)
+            public Out([DisallowNull] DfcLua2Component luaComponent)
             {
-                this.parent = parent;
+                item = luaComponent.Item;
+                outPinMapConnection = luaComponent.outPinMapConnection;
             }
 
             public DynValue Index(Script script, DynValue index, bool isDirectIndexing)
@@ -143,12 +156,12 @@ end", codeFriendlyName: null);
 
                 var pin = (int)indexNumber;
 
-                var connection = parent.outPinMapConnection[pin] ?? throw new ScriptRuntimeException($"invalid pin {pin}");
-                parent.item.SendSignal(new Signal(value.Type switch
+                var connection = outPinMapConnection[pin] ?? throw new ScriptRuntimeException($"invalid pin {pin}!");
+                item.SendSignal(new Signal(value.Type switch
                 {
                     DataType.Number => value.Number.ToString(CultureInfo.InvariantCulture),
                     DataType.String => value.String,
-                    _ => throw new ScriptRuntimeException($"pin {pin} outputs an invalid value type {value.Type}")
+                    _ => throw new ScriptRuntimeException($"pin {pin} outputs an invalid value type '{value.Type}'!")
                 }), connection);
 
                 return true;
@@ -160,9 +173,46 @@ end", codeFriendlyName: null);
             }
         };
 
+        private static DynValue clear(ScriptExecutionContext executionContext, CallbackArguments args)
+        {
+            args.AsType(0, nameof(clear), DataType.Table, false).Table.Clear();
+            return DynValue.Nil;
+        }
+
+        private DynValue sync(ScriptExecutionContext executionContext, CallbackArguments args)
+        {
+#if SERVER
+            Table syncTable = args.AsType(0, nameof(sync), DataType.Table, false).Table;
+            GameMain.NetworkMember.CreateEntityEvent(item, signalsChangePropertyEventData);
+            for (int i = 0; i < signalsLength; i++)
+            {
+                int pin = i + 1;
+                var value = syncTable.Get(pin);
+                networkComponent.Signals[i] = value.Type switch
+                {
+                    DataType.Nil => string.Empty,
+                    DataType.Number => value.Number.ToString(CultureInfo.InvariantCulture),
+                    DataType.String => value.String,
+                    _ => throw new ScriptRuntimeException($"sync pin {pin} with an invalid value type '{value.Type}'!")
+                };
+                item.CreateServerEvent(networkComponent, syncEventDatas[i]);
+            }
+#endif
+            return DynValue.Nil;
+        }
+
         public override void OnItemLoaded()
         {
             base.OnItemLoaded();
+
+            networkComponent = item.GetComponent<ButtonTerminal>();
+            signals = networkComponent.SerializableProperties[nameof(ButtonTerminal.Signals).ToIdentifier()];
+            signalsLength = networkComponent.Signals.Length;
+            syncEventDatas = Enumerable.Range(0, signalsLength)
+                .Select(i => new ButtonTerminal.EventData(i))
+                .ToArray();
+            signalsChangePropertyEventData = new(signals, networkComponent);
+
             foreach (var connection in item.Connections)
             {
                 if (outRegex.Match(connection.Name) is { Success: true } outMatch)

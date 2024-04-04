@@ -133,6 +133,7 @@
 <li><strong>inp</strong>: 由用户在chunk中定义，用于访问输入的信号值，类型为table&lt;integer, string|number&gt;或fun(i: integer, v:string|number)</li>
 <li><strong>out</strong>: 包装了lua组件的userdata，在代码中执行setindex操作，用于控制信号输出</li>
 <li><strong>clear</strong>: 清空table的函数，原型fun(t: table)</li>
+<li><strong>sync</strong>: 仅服务器可用，客户端忽略，用于向客户端发送并同步输出信号，该函数接受一个table作为参数，表域内，键为需要执行同步输出的引脚序号，值为信号值</li>
 </ul>
 <h5 id="示例一">示例一 </h5>
 <pre data-role="codeBlock" data-info="lua" class="language-lua lua"><code><span class="token comment">-- 定义inp（可为`nil`），勿使用local声明，因为符号`inp`的变量已被预先声明为局部变量，其类型为`table&lt;integer, string|number&gt;`；</span>
@@ -150,6 +151,8 @@ inp <span class="token operator">=</span> <span class="token punctuation">{</spa
     <span class="token keyword keyword-if">if</span> inp<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">~=</span> <span class="token keyword keyword-nil">nil</span> <span class="token keyword keyword-then">then</span>
         <span class="token comment">-- 从signal_out1引脚输出逝去时间，会立即输出该信号，而不是像1代的lua组件一样等到更新结束之后再输出</span>
         out<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> 逝去时间
+        <span class="token comment">-- 服务器发起同步事件，在客户端接受到事件数据后，会从signal_out1输出逝去时间</span>
+        <span class="token function">sync</span> <span class="token punctuation">{</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> 逝去时间 <span class="token punctuation">}</span>
         <span class="token comment">-- inp并不会被自动清除，需要手动清除inp[1]</span>
         inp<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token keyword keyword-nil">nil</span>
     <span class="token keyword keyword-end">end</span>
@@ -163,7 +166,9 @@ inp <span class="token operator">=</span> <span class="token punctuation">{</spa
     <span class="token keyword keyword-end">end</span>
 <span class="token keyword keyword-end">end</span>
 </code></pre><h5 id="示例二">示例二 </h5>
-<pre data-role="codeBlock" data-info="lua" class="language-lua lua"><code><span class="token comment">-- inp也可以被定义成原型为`fun(i, v)`的函数；</span>
+<pre data-role="codeBlock" data-info="lua" class="language-lua lua"><code><span class="token keyword keyword-local">local</span> 逝去时间 <span class="token operator">=</span> <span class="token number">0.0</span>
+
+<span class="token comment">-- inp也可以被定义成原型为`fun(i, v)`的函数；</span>
 <span class="token comment">-- 在接受到信号时回调，参数`i`为引脚序号（输入），`v`为对应引脚序号所接受到的信号值。</span>
 <span class="token keyword keyword-function">function</span> <span class="token function">inp</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> v<span class="token punctuation">)</span>
     <span class="token keyword keyword-if">if</span> i <span class="token operator">==</span> <span class="token number">1</span> <span class="token keyword keyword-then">then</span>
