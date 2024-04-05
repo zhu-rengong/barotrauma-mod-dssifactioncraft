@@ -129,16 +129,22 @@
 拥有32个并排IO，通过闭包上下文访问upvalues，减轻了性能负担，并撤除了环境约束。</p>
 <h5 id="chunk块所在作用域包含的变量列表">Chunk块所在作用域包含的变量列表 </h5>
 <ul>
-<li><strong>luaItem</strong>: lua组件本身，类型为Barotrauma.Item</li>
-<li><strong>inp</strong>: 由用户在chunk中定义，用于访问输入的信号值，类型为table&lt;integer, string|number&gt;或fun(i: integer, v:string|number)</li>
 <li><strong>out</strong>: 包装了lua组件的userdata，在代码中执行setindex操作，用于控制信号输出</li>
+<li><strong>luaItem</strong>: lua组件本身，类型为Barotrauma.Item</li>
 <li><strong>clear</strong>: 清空table的函数，原型fun(t: table)</li>
 <li><strong>sync</strong>: 仅服务器可用，客户端忽略，用于向客户端发送并同步输出信号，该函数接受一个table作为参数，表域内，键为需要执行同步输出的引脚序号，值为信号值</li>
+<li><strong>upd</strong>: 更新函数，会传递更新周期作为参数</li>
+<li><strong>inp</strong>: 由用户在chunk中定义，用于访问输入的信号值，类型为table&lt;integer, string|number&gt;或fun(i: integer, v:string|number)</li>
+<li><strong>sender</strong>: 使用out输出信号时设置的发送者</li>
+<li><strong>senders</strong>: 用于访问相应引脚接收到的信号的发送者</li>
 </ul>
 <h5 id="示例一">示例一 </h5>
 <pre data-role="codeBlock" data-info="lua" class="language-lua lua"><code><span class="token comment">-- 定义inp（可为`nil`），勿使用local声明，因为符号`inp`的变量已被预先声明为局部变量，其类型为`table&lt;integer, string|number&gt;`；</span>
 <span class="token comment">-- 在表域内，键为引脚序号（输入），值为对应引脚序号所接受到的信号值。</span>
 inp <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+
+<span class="token comment">-- 定义senders（可为`nil`），同上，勿使用local声明；</span>
+senders <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
 
 <span class="token keyword keyword-local">local</span> 逝去时间 <span class="token operator">=</span> <span class="token number">0.0</span>
 
@@ -149,18 +155,23 @@ inp <span class="token operator">=</span> <span class="token punctuation">{</spa
 
     <span class="token comment">-- 如果signal_in1引脚接受到信号</span>
     <span class="token keyword keyword-if">if</span> inp<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">~=</span> <span class="token keyword keyword-nil">nil</span> <span class="token keyword keyword-then">then</span>
+        <span class="token comment">-- 设置信号发送者为signal_in1引脚接受到的信号的发送者</span>
+        sender <span class="token operator">=</span> senders<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
         <span class="token comment">-- 从signal_out1引脚输出逝去时间，会立即输出该信号，而不是像1代的lua组件一样等到更新结束之后再输出</span>
         out<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> 逝去时间
         <span class="token comment">-- 服务器发起同步事件，在客户端接受到事件数据后，会从signal_out1输出逝去时间</span>
         <span class="token function">sync</span> <span class="token punctuation">{</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> 逝去时间 <span class="token punctuation">}</span>
-        <span class="token comment">-- inp并不会被自动清除，需要手动清除inp[1]</span>
+        <span class="token comment">-- inp并不会被自动清除，需要手动清除inp[1]，sender和senders也一样</span>
         inp<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token keyword keyword-nil">nil</span>
+        sender <span class="token operator">=</span> <span class="token keyword keyword-nil">nil</span>
+        senders<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token keyword keyword-nil">nil</span>
     <span class="token keyword keyword-end">end</span>
 
     <span class="token comment">-- 如果signal_in2引脚接受到信号</span>
     <span class="token keyword keyword-if">if</span> inp<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token keyword keyword-then">then</span>
-        <span class="token comment">-- 函数清空inp表</span>
+        <span class="token comment">-- 函数清空inp表和senders表</span>
         <span class="token function">clear</span><span class="token punctuation">(</span>inp<span class="token punctuation">)</span>
+        <span class="token function">clear</span><span class="token punctuation">(</span>senders<span class="token punctuation">)</span>
         <span class="token comment">-- 时间复位</span>
         逝去时间 <span class="token operator">=</span> <span class="token number">0.0</span>
     <span class="token keyword keyword-end">end</span>
@@ -186,7 +197,7 @@ inp <span class="token operator">=</span> <span class="token punctuation">{</spa
 <pre data-role="codeBlock" data-info="lua" class="language-lua lua"><code><span class="token comment">-- 你也可以不用定义inp和upd，直接运行一段代码</span>
 <span class="token function">print</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token string">"物品总数：%i"</span><span class="token punctuation">)</span><span class="token punctuation">:</span><span class="token function">format</span><span class="token punctuation">(</span><span class="token operator">#</span>Item<span class="token punctuation">.</span>ItemList<span class="token punctuation">)</span><span class="token punctuation">)</span>
 <span class="token function">print</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token string">"Lua组件位置：%s"</span><span class="token punctuation">)</span><span class="token punctuation">:</span><span class="token function">format</span><span class="token punctuation">(</span><span class="token function">tostring</span><span class="token punctuation">(</span>luaItem<span class="token punctuation">.</span>WorldPosition<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
-<span class="token function">print</span><span class="token punctuation">(</span><span class="token string">"初始化完成"</span><span class="token punctuation">)</span>
+<span class="token function">print</span><span class="token punctuation">(</span><span class="token string">"初始化完成！"</span><span class="token punctuation">)</span>
 </code></pre><h4 id="-传送点dfc_teleporter-c组件dfcteleporter">☑ 传送点(dfc_teleporter) C#组件(DfcTeleporter) </h4>
 <p>与<a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2902757031">ZDoor</a>模组以及PVP服使用的传送门类似，交互时可以传送角色，须要接线才能使其运转，有所不同的是它没有实际的贴图，但可以调整其交互范围以及传送开关，通常可以摆放其他的装饰物作为该传送点的外观。<br>
 当由某个角色产生的信号发送到了传送点的<strong>信号输入</strong>时，该角色将被传送至该传送点的位置。<br>

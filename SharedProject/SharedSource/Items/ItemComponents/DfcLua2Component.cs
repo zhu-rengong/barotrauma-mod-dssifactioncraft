@@ -206,7 +206,11 @@ end", codeFriendlyName: null);
                     DataType.String => value.String,
                     _ => throw new ScriptRuntimeException($"sync pin {pin} with an invalid value type '{value.Type}'!")
                 };
-                item.CreateServerEvent(networkComponent, syncEventDatas[i]);
+
+                if (value.Type != DataType.Nil)
+                {
+                    item.CreateServerEvent(networkComponent, syncEventDatas[i]);
+                }
             }
 #endif
             return DynValue.Nil;
