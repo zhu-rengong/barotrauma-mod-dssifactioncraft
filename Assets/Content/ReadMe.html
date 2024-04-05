@@ -52,6 +52,7 @@
 <li><a href="#%E7%A4%BA%E4%BE%8B%E4%B8%80">示例一</a></li>
 <li><a href="#%E7%A4%BA%E4%BE%8B%E4%BA%8C">示例二</a></li>
 <li><a href="#%E7%A4%BA%E4%BE%8B%E4%B8%89">示例三</a></li>
+<li><a href="#%E7%A4%BA%E4%BE%8B%E5%9B%9B">示例四</a></li>
 </ul>
 </li>
 <li><a href="#-%E4%BC%A0%E9%80%81%E7%82%B9dfc_teleporter-c%E7%BB%84%E4%BB%B6dfcteleporter">☑ 传送点(dfc_teleporter) C#组件(DfcTeleporter)</a></li>
@@ -133,6 +134,7 @@
 <li><strong>luaItem</strong>: lua组件本身，类型为Barotrauma.Item</li>
 <li><strong>clear</strong>: 清空table的函数，原型fun(t: table)</li>
 <li><strong>sync</strong>: 仅服务器可用，客户端忽略，用于向客户端发送并同步输出信号，该函数接受一个table作为参数，表域内，键为需要执行同步输出的引脚序号，值为信号值</li>
+<li><strong>loaded</strong>: 函数，在地图加载完成后执行</li>
 <li><strong>upd</strong>: 更新函数，会传递更新周期作为参数</li>
 <li><strong>inp</strong>: 由用户在chunk中定义，用于访问输入的信号值，类型为table&lt;integer, string|number&gt;或fun(i: integer, v:string|number)</li>
 <li><strong>sender</strong>: 使用out输出信号时设置的发送者</li>
@@ -198,6 +200,13 @@ senders <span class="token operator">=</span> <span class="token punctuation">{<
 <span class="token function">print</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token string">"物品总数：%i"</span><span class="token punctuation">)</span><span class="token punctuation">:</span><span class="token function">format</span><span class="token punctuation">(</span><span class="token operator">#</span>Item<span class="token punctuation">.</span>ItemList<span class="token punctuation">)</span><span class="token punctuation">)</span>
 <span class="token function">print</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token string">"Lua组件位置：%s"</span><span class="token punctuation">)</span><span class="token punctuation">:</span><span class="token function">format</span><span class="token punctuation">(</span><span class="token function">tostring</span><span class="token punctuation">(</span>luaItem<span class="token punctuation">.</span>WorldPosition<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
 <span class="token function">print</span><span class="token punctuation">(</span><span class="token string">"初始化完成！"</span><span class="token punctuation">)</span>
+</code></pre><h5 id="示例四">示例四 </h5>
+<pre data-role="codeBlock" data-info="lua" class="language-lua lua"><code><span class="token comment">-- 定义loaded函数（可为`nil`），在地图加载完成后执行</span>
+<span class="token keyword keyword-function">function</span> <span class="token function">loaded</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword keyword-local">local</span> 随机密码 <span class="token operator">=</span> math<span class="token punctuation">.</span><span class="token function">random</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    out<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> 随机密码
+    <span class="token function">sync</span> <span class="token punctuation">{</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> 随机密码 <span class="token punctuation">}</span>
+<span class="token keyword keyword-end">end</span>
 </code></pre><h4 id="-传送点dfc_teleporter-c组件dfcteleporter">☑ 传送点(dfc_teleporter) C#组件(DfcTeleporter) </h4>
 <p>与<a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2902757031">ZDoor</a>模组以及PVP服使用的传送门类似，交互时可以传送角色，须要接线才能使其运转，有所不同的是它没有实际的贴图，但可以调整其交互范围以及传送开关，通常可以摆放其他的装饰物作为该传送点的外观。<br>
 当由某个角色产生的信号发送到了传送点的<strong>信号输入</strong>时，该角色将被传送至该传送点的位置。<br>

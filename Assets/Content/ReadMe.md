@@ -20,6 +20,7 @@
         - [示例一](#示例一)
         - [示例二](#示例二)
         - [示例三](#示例三)
+        - [示例四](#示例四)
       - [☑ 传送点(dfc\_teleporter) C#组件(DfcTeleporter)](#-传送点dfc_teleporter-c组件dfcteleporter)
       - [☑ 数据获取器(dfc\_datagetter) C#组件(DfcDataGetter)](#-数据获取器dfc_datagetter-c组件dfcdatagetter)
       - [☑ 数据设置器(dfc\_datasetter) C#组件(DfcDataSetter)](#-数据设置器dfc_datasetter-c组件dfcdatasetter)
@@ -112,6 +113,7 @@ Ctrl+CV自[RGzXTrauma](https://steamcommunity.com/sharedfiles/filedetails/?id=29
 - **luaItem**: lua组件本身，类型为Barotrauma.Item
 - **clear**: 清空table的函数，原型fun(t: table)
 - **sync**: 仅服务器可用，客户端忽略，用于向客户端发送并同步输出信号，该函数接受一个table作为参数，表域内，键为需要执行同步输出的引脚序号，值为信号值
+- **loaded**: 函数，在地图加载完成后执行
 - **upd**: 更新函数，会传递更新周期作为参数
 - **inp**: 由用户在chunk中定义，用于访问输入的信号值，类型为table\<integer, string|number\>或fun(i: integer, v:string|number)
 - **sender**: 使用out输出信号时设置的发送者
@@ -182,6 +184,15 @@ end
 print(("物品总数：%i"):format(#Item.ItemList))
 print(("Lua组件位置：%s"):format(tostring(luaItem.WorldPosition)))
 print("初始化完成！")
+```
+##### 示例四
+```lua
+-- 定义loaded函数（可为`nil`），在地图加载完成后执行
+function loaded()
+    local 随机密码 = math.random()
+    out[1] = 随机密码
+    sync { [1] = 随机密码 }
+end
 ```
 
 #### ☑ 传送点(dfc_teleporter) C#组件(DfcTeleporter)

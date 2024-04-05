@@ -22,6 +22,7 @@ namespace DSSIFactionCraft
         private const string PARAMETER_NAME_LUA_ITEM = "luaItem";
         private const string PARAMETER_NAME_CLEAR = nameof(clear);
         private const string PARAMETER_NAME_SYNC = nameof(sync);
+        private const string UPVALUE_NAME_LOADED = nameof(loaded);
         private const string UPVALUE_NAME_UPD = nameof(upd);
         private const string UPVALUE_NAME_INP = nameof(inp);
         private const string UPVALUE_NAME_SENDER = nameof(sender);
@@ -39,6 +40,7 @@ namespace DSSIFactionCraft
         private Dictionary<Connection, int> inpConnectionMapPin = new();
 
         private Script? script;
+        private DynValue? loaded;
         private DynValue? upd;
         private DynValue? inp;
         private DynValue? sender;
@@ -53,6 +55,7 @@ namespace DSSIFactionCraft
         private void Stop()
         {
             script = null;
+            loaded = null;
             upd = null;
             inp = null;
             sender = null;
@@ -83,9 +86,9 @@ namespace DSSIFactionCraft
                 try
                 {
                     var externalFunction = script.DoString($@"
-return function({PARAMETER_NAME_LUA_ITEM}, {PARAMETER_NAME_OUT}, {PARAMETER_NAME_CLEAR}, {PARAMETER_NAME_SYNC}) local {UPVALUE_NAME_UPD}, {UPVALUE_NAME_INP}, {UPVALUE_NAME_SENDER}, {UPVALUE_NAME_SENDERS}
+return function({PARAMETER_NAME_LUA_ITEM}, {PARAMETER_NAME_OUT}, {PARAMETER_NAME_CLEAR}, {PARAMETER_NAME_SYNC}) local {UPVALUE_NAME_LOADED}, {UPVALUE_NAME_UPD}, {UPVALUE_NAME_INP}, {UPVALUE_NAME_SENDER}, {UPVALUE_NAME_SENDERS}
 {chunk}
-return function() return {UPVALUE_NAME_UPD}, {UPVALUE_NAME_INP}, {UPVALUE_NAME_SENDER}, {UPVALUE_NAME_SENDERS} end
+return function() return {UPVALUE_NAME_LOADED}, {UPVALUE_NAME_UPD}, {UPVALUE_NAME_INP}, {UPVALUE_NAME_SENDER}, {UPVALUE_NAME_SENDERS} end
 end", codeFriendlyName: null);
 
                     var @out = new Out(this);
@@ -102,6 +105,7 @@ end", codeFriendlyName: null);
                             KeyValuePair.Create(internalClosure.GetUpvalueName(i), internalClosure.GetUpvalue(i))
                         )
                     );
+                    loaded = nameMapUpvalue[UPVALUE_NAME_LOADED];
                     upd = nameMapUpvalue[UPVALUE_NAME_UPD];
                     inp = nameMapUpvalue[UPVALUE_NAME_INP];
                     sender = nameMapUpvalue[UPVALUE_NAME_SENDER];
@@ -238,6 +242,22 @@ end", codeFriendlyName: null);
                 {
                     inpConnectionMapPin.Add(connection, int.Parse(inpMatch.Groups[1].Value));
                 }
+            }
+        }
+
+        public override void OnMapLoaded()
+        {
+            base.OnMapLoaded();
+
+            if (!isActive || loaded.Type != DataType.Function) { return; }
+
+            try
+            {
+                script.Call(loaded);
+            }
+            catch (ScriptRuntimeException e)
+            {
+                HandleException("loaded", e, stop: true);
             }
         }
 
