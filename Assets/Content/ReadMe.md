@@ -191,7 +191,14 @@ print("初始化完成！")
 function loaded()
     local 随机密码 = math.random()
     out[1] = 随机密码
-    sync { [1] = 随机密码 }
+    -- sync可能无法在此时100%同步，可以用Lub.Wait延时一段时间再执行
+    Lub.Wait { delay = 3000,
+        function()
+            if not luaItem.Removed then
+                sync { [1] = 随机密码 }
+            end
+        end
+    }
 end
 ```
 
