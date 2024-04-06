@@ -277,7 +277,7 @@ end", codeFriendlyName: null);
 
         public override void ReceiveSignal(Signal signal, Connection connection)
         {
-            if (!isActive) { return; }
+            if (!isActive || inp.Type == DataType.Nil) { return; }
 
             if (inpConnectionMapPin.TryGetValue(connection, out int pin))
             {
