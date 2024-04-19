@@ -382,11 +382,11 @@ return {
         -- 在战地医疗服内生成3种药物
         inventory = {
             -- 生成1组绷带(8个)
-            { identifier = "antibleeding1",  stacks = 1 },
+            { identifier = "antibleeding1", stacks = 1 },
             -- 生成2袋生理盐水
             { identifier = "antibloodloss2", amount = 2 },
             -- 在剩余的容器空间中填满吗啡
-            { identifier = "antidama1",      fillinventory = true }
+            { identifier = "antidama1", fillinventory = true }
         }
     },
     {
@@ -402,6 +402,11 @@ return {
             [{ "custominterface", "elementstates" }] = "true,",
             -- 设置CustomInterface组件的Signals属性，将可编辑的第二个条目(声纳信号)设置为“我在这里~”
             [{ "custominterface", "signals" }] = ";我在这里~",
+            -- 推荐这样设置：
+            custominterface = {
+                elementstates = "true,",
+                signals = ";我在这里~",
+            }
         },
         -- 因为CustomInterface的属性无法像其他组件的属性一样直接同步给客户端
         -- 所以须要创建一个CustomInterface的ServerEvent事件来实现同步
@@ -422,6 +427,15 @@ return {
         onspawned = function(item)
             -- 生成登船斧(identifier: boardingaxe)之后在控制台输出其名称
             print(item.Name)
+            -- 登船斧缩放改成0.75，精灵和图标为红色，近战攻击间隔0.5s
+            Lub.SPEdit {
+                scale = 0.75,
+                spritecolor = "255,0,0",
+                inventoryiconcolor = "255,0,0",
+                meleeweapon = {
+                    reload = 0.5
+                }
+            }:apply(item)
         end
     },
     {

@@ -3,7 +3,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       
-      <link rel="stylesheet" href="file:///c:\Users\27314\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.8.13\crossnote\dependencies\katex\katex.min.css">
+      <link rel="stylesheet" href="file:///c:\Users\Administrator\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.8.13\crossnote\dependencies\katex\katex.min.css">
       
       
       
@@ -205,7 +205,14 @@ senders <span class="token operator">=</span> <span class="token punctuation">{<
 <span class="token keyword keyword-function">function</span> <span class="token function">loaded</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
     <span class="token keyword keyword-local">local</span> 随机密码 <span class="token operator">=</span> math<span class="token punctuation">.</span><span class="token function">random</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
     out<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> 随机密码
-    <span class="token function">sync</span> <span class="token punctuation">{</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> 随机密码 <span class="token punctuation">}</span>
+    <span class="token comment">-- sync可能无法在此时100%同步，可以用Lub.Wait延时一段时间再执行</span>
+    Lub<span class="token punctuation">.</span><span class="token function">Wait</span> <span class="token punctuation">{</span> delay <span class="token operator">=</span> <span class="token number">3000</span><span class="token punctuation">,</span>
+        <span class="token keyword keyword-function">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token keyword keyword-if">if</span> <span class="token keyword keyword-not">not</span> luaItem<span class="token punctuation">.</span>Removed <span class="token keyword keyword-then">then</span>
+                <span class="token function">sync</span> <span class="token punctuation">{</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> 随机密码 <span class="token punctuation">}</span>
+            <span class="token keyword keyword-end">end</span>
+        <span class="token keyword keyword-end">end</span>
+    <span class="token punctuation">}</span>
 <span class="token keyword keyword-end">end</span>
 </code></pre><h4 id="-传送点dfc_teleporter-c组件dfcteleporter">☑ 传送点(dfc_teleporter) C#组件(DfcTeleporter) </h4>
 <p>与<a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2902757031">ZDoor</a>模组以及PVP服使用的传送门类似，交互时可以传送角色，须要接线才能使其运转，有所不同的是它没有实际的贴图，但可以调整其交互范围以及传送开关，通常可以摆放其他的装饰物作为该传送点的外观。<br>
@@ -403,11 +410,11 @@ senders <span class="token operator">=</span> <span class="token punctuation">{<
         <span class="token comment">-- 在战地医疗服内生成3种药物</span>
         inventory <span class="token operator">=</span> <span class="token punctuation">{</span>
             <span class="token comment">-- 生成1组绷带(8个)</span>
-            <span class="token punctuation">{</span> identifier <span class="token operator">=</span> <span class="token string">"antibleeding1"</span><span class="token punctuation">,</span>  stacks <span class="token operator">=</span> <span class="token number">1</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token punctuation">{</span> identifier <span class="token operator">=</span> <span class="token string">"antibleeding1"</span><span class="token punctuation">,</span> stacks <span class="token operator">=</span> <span class="token number">1</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
             <span class="token comment">-- 生成2袋生理盐水</span>
             <span class="token punctuation">{</span> identifier <span class="token operator">=</span> <span class="token string">"antibloodloss2"</span><span class="token punctuation">,</span> amount <span class="token operator">=</span> <span class="token number">2</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
             <span class="token comment">-- 在剩余的容器空间中填满吗啡</span>
-            <span class="token punctuation">{</span> identifier <span class="token operator">=</span> <span class="token string">"antidama1"</span><span class="token punctuation">,</span>      fillinventory <span class="token operator">=</span> <span class="token keyword keyword-true">true</span> <span class="token punctuation">}</span>
+            <span class="token punctuation">{</span> identifier <span class="token operator">=</span> <span class="token string">"antidama1"</span><span class="token punctuation">,</span> fillinventory <span class="token operator">=</span> <span class="token keyword keyword-true">true</span> <span class="token punctuation">}</span>
         <span class="token punctuation">}</span>
     <span class="token punctuation">}</span><span class="token punctuation">,</span>
     <span class="token punctuation">{</span>
@@ -423,6 +430,11 @@ senders <span class="token operator">=</span> <span class="token punctuation">{<
             <span class="token punctuation">[</span><span class="token punctuation">{</span> <span class="token string">"custominterface"</span><span class="token punctuation">,</span> <span class="token string">"elementstates"</span> <span class="token punctuation">}</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">"true,"</span><span class="token punctuation">,</span>
             <span class="token comment">-- 设置CustomInterface组件的Signals属性，将可编辑的第二个条目(声纳信号)设置为“我在这里~”</span>
             <span class="token punctuation">[</span><span class="token punctuation">{</span> <span class="token string">"custominterface"</span><span class="token punctuation">,</span> <span class="token string">"signals"</span> <span class="token punctuation">}</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">";我在这里~"</span><span class="token punctuation">,</span>
+            <span class="token comment">-- 推荐这样设置：</span>
+            custominterface <span class="token operator">=</span> <span class="token punctuation">{</span>
+                elementstates <span class="token operator">=</span> <span class="token string">"true,"</span><span class="token punctuation">,</span>
+                signals <span class="token operator">=</span> <span class="token string">";我在这里~"</span><span class="token punctuation">,</span>
+            <span class="token punctuation">}</span>
         <span class="token punctuation">}</span><span class="token punctuation">,</span>
         <span class="token comment">-- 因为CustomInterface的属性无法像其他组件的属性一样直接同步给客户端</span>
         <span class="token comment">-- 所以须要创建一个CustomInterface的ServerEvent事件来实现同步</span>
@@ -443,6 +455,15 @@ senders <span class="token operator">=</span> <span class="token punctuation">{<
         onspawned <span class="token operator">=</span> <span class="token keyword keyword-function">function</span><span class="token punctuation">(</span>item<span class="token punctuation">)</span>
             <span class="token comment">-- 生成登船斧(identifier: boardingaxe)之后在控制台输出其名称</span>
             <span class="token function">print</span><span class="token punctuation">(</span>item<span class="token punctuation">.</span>Name<span class="token punctuation">)</span>
+            <span class="token comment">-- 登船斧缩放改成0.75，精灵和图标为红色，近战攻击间隔0.5s</span>
+            Lub<span class="token punctuation">.</span><span class="token function">SPEdit</span> <span class="token punctuation">{</span>
+                scale <span class="token operator">=</span> <span class="token number">0.75</span><span class="token punctuation">,</span>
+                spritecolor <span class="token operator">=</span> <span class="token string">"255,0,0"</span><span class="token punctuation">,</span>
+                inventoryiconcolor <span class="token operator">=</span> <span class="token string">"255,0,0"</span><span class="token punctuation">,</span>
+                meleeweapon <span class="token operator">=</span> <span class="token punctuation">{</span>
+                    reload <span class="token operator">=</span> <span class="token number">0.5</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span><span class="token punctuation">:</span><span class="token function">apply</span><span class="token punctuation">(</span>item<span class="token punctuation">)</span>
         <span class="token keyword keyword-end">end</span>
     <span class="token punctuation">}</span><span class="token punctuation">,</span>
     <span class="token punctuation">{</span>
