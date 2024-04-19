@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Items>
-  <Item name="" identifier="dfc_lua2component" category="Misc" subcategory="dfc" tags="smallitem,dfc_mapdevtool" cargocontaineridentifier="metalcrate" scale="0.5" spritecolor="100,100,255,255" inventoryiconcolor="100,100,255,255" impactsoundtag="impact_metal_light" isshootable="true" resizehorizontal="true" resizevertical="true">
+  <Item name="" identifier="dfc_lua2component" category="Misc" subcategory="dfc" tags="smallitem,dfc_mapdevtool" linkable="true" allowedlinks="structure,item" spritecolor="100,100,255,255" inventoryiconcolor="100,100,255,255" resizehorizontal="true" resizevertical="true">
     <Sprite texture="Content/Items/Labels/labels.png" depth="0.850" sourcerect="4,100,28,24" />
     <ButtonTerminal canbeselected="false" allowingameediting="false">
       <GuiFrame />
