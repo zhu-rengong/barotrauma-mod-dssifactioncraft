@@ -32,7 +32,7 @@ namespace DSSIFactionCraft.Items.Components
                     {
                         if (Timing.TotalTime - LastTeleportTime < Cooldown) { return; }
                         sender.TeleportTo(item.WorldPosition);
-                        if (!DisableTeleportDraggedCharacter && sender.SelectedCharacter is Character { CanBeDragged: true } selectedCharacter)
+                        if (!DisableTeleportDraggedCharacter && sender.SelectedCharacter is Character { IsDraggable: true } selectedCharacter)
                         {
                             selectedCharacter.TeleportTo(sender.WorldPosition);
                         }

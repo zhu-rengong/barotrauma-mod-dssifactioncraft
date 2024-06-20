@@ -280,7 +280,7 @@ function m:initialize()
 
     if SERVER then
         if self.allowRespawn ~= nil then
-            Game.ServerSettings.AllowRespawn = self.allowRespawn
+            Game.ServerSettings.RespawnMode = self.allowRespawn and 0 or 2
         end
 
         chat.addcommand({
@@ -319,7 +319,8 @@ function m:initialize()
             "DFC",
             "Barotrauma.Networking.RespawnManager", "RespawnCharacters",
             {
-                "Microsoft.Xna.Framework.Vector2"
+                "Microsoft.Xna.Framework.Vector2",
+                "out System.Boolean",
             }, function(_, ptable)
                 moses.clear(self._waitRespawn)
                 ptable.PreventExecution = true
@@ -462,7 +463,8 @@ function m:initialize()
                 "DFC",
                 "Barotrauma.Networking.RespawnManager", "RespawnCharacters",
                 {
-                    "Microsoft.Xna.Framework.Vector2"
+                    "Microsoft.Xna.Framework.Vector2",
+                    "out System.Boolean",
                 },
                 Hook.HookMethodType.Before
             )
