@@ -280,7 +280,7 @@ function m:initialize()
 
     if SERVER then
         if self.allowRespawn ~= nil then
-            Game.ServerSettings.RespawnMode = self.allowRespawn and 0 or 2
+            Game.ServerSettings.RespawnMode = self.allowRespawn and 0 or 1
         end
 
         chat.addcommand({
