@@ -2,7 +2,7 @@
     <PropertyGroup>
         <!-- IMPORTANT: Should point to <Barotrauma_Install>\LocalMods\<MyModName>\ -->
         <!-- IMPORTANT: ModDeplyDir Path must end with '\' -->
-        <ModDeployDir>H:\Source\Barotrauma\LocalMods\DSSIFactionCraftt\</ModDeployDir>
+        <ModDeployDir>H:\Source\Barotrauma\LocalMods\DSSIFactionCraft\</ModDeployDir>
         <!-- IMPORTANT: Avoid the use of special (IE: / : ; , \ < > ?) (periods "." are good) and non-english characters in the AssemblyName.-->
         <AssemblyName>DSSIFactionCraft</AssemblyName>
     </PropertyGroup>
