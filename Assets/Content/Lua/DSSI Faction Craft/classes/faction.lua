@@ -1,5 +1,5 @@
 ---@class dfc.faction: dfc.inner
----@field _participators { [string]:string[] } # Client.SteamID
+---@field _participators { [string]:string[] } # Client.AccountId
 ---@field identifier Barotrauma.CharacterTeamType
 ---@field teamID Barotrauma.CharacterTeamType
 ---@field maxLives integer

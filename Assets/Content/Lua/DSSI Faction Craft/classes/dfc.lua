@@ -19,7 +19,7 @@ local UniversalFactionParticipateKey = '_'
 ---@field existAnyFaction boolean
 ---@field jobs { [string]:dfc.job }
 ---@field gears { [string]:dfc.gear }
----@field _firstPlayerSteamIDs { [string]:boolean }
+---@field _firstPlayerAccountIds { [string]:boolean }
 ---@field _originalSpectateOnly { [string]:boolean }
 ---@field _remainingLives { [string]:integer }
 ---@field _joinedFaction { [string|unknown]:dfc.faction }
@@ -48,7 +48,7 @@ function m:__init()
 end
 
 function m:resetRoundDatas()
-    self._firstPlayerSteamIDs = {}
+    self._firstPlayerAccountIds = {}
     self._originalSpectateOnly = {}
     self._remainingLives = {}
     self._joinedFaction = {}
@@ -287,14 +287,14 @@ function m:initialize()
             { "!fix", "!fixprompt" },
             help = l10n { "ChatCommandFixPrompt" }.value,
             callback = function(client, args)
-                local clientSteamID = client.SteamID
-                if not self._joinedFaction[clientSteamID] then
-                    self._promptedJoiningFaction[clientSteamID] = nil
+                local clientAccountId = client.AccountId.StringRepresentation
+                if not self._joinedFaction[clientAccountId] then
+                    self._promptedJoiningFaction[clientAccountId] = nil
                 end
-                if not self._assignedJob[clientSteamID] then
-                    self._promptedAssigningJob[clientSteamID] = nil
+                if not self._assignedJob[clientAccountId] then
+                    self._promptedAssigningJob[clientAccountId] = nil
                 end
-                local character = self._characterWaitChooseGearBy[clientSteamID]
+                local character = self._characterWaitChooseGearBy[clientAccountId]
                 if character and not self._chosenGear[character] then
                     self._promptedChoosingGear[character] = nil
                 end
@@ -304,11 +304,11 @@ function m:initialize()
         chat.addcommand({
             "!rejoin",
             callback = function(client, args)
-                local clientSteamID = client.SteamID
-                self._joinedFaction[clientSteamID] = nil
-                self._promptedJoiningFaction[clientSteamID] = nil
-                self._assignedJob[clientSteamID] = nil
-                self._promptedAssigningJob[clientSteamID] = nil
+                local clientAccountId = client.AccountId.StringRepresentation
+                self._joinedFaction[clientAccountId] = nil
+                self._promptedJoiningFaction[clientAccountId] = nil
+                self._assignedJob[clientAccountId] = nil
+                self._promptedAssigningJob[clientAccountId] = nil
                 client.SpectateOnly = false
             end,
             hidden = true,
@@ -328,16 +328,16 @@ function m:initialize()
         )
 
         moses.forEachi(Client.ClientList, function(client)
-            table.insert(self._firstPlayerSteamIDs, client.SteamID)
-            self._originalSpectateOnly[client.SteamID] = client.SpectateOnly
+            table.insert(self._firstPlayerAccountIds, client.AccountId.StringRepresentation)
+            self._originalSpectateOnly[client.AccountId.StringRepresentation] = client.SpectateOnly
             client.SpectateOnly = true
         end)
     end
 
     DSSI.Hook("roundStart", "DFC", function()
         if SERVER then
-            moses.forEach(self._originalSpectateOnly, function(spectateOnly, clientSteamID)
-                local client = DFC.GetConnectedClientBySteamID(clientSteamID)
+            moses.forEach(self._originalSpectateOnly, function(spectateOnly, clientAccountId)
+                local client = DFC.GetClientByAccountId(clientAccountId)
                 if client then client.SpectateOnly = spectateOnly end
             end)
         end
@@ -493,20 +493,21 @@ function m:initialize()
                 ---@type { [dfc.job]:string[] }
                 local jobGearOptions = {}
 
+                local disallowSpectating = not Game.ServerSettings.AllowSpectating
                 local clients = self.allowMidRoundJoin
                     and Client.ClientList
-                    or DFC.GetConnectedClientListBySteamIDs(self._firstPlayerSteamIDs)
+                    or DFC.GetClientListByAccountIds(self._firstPlayerAccountIds)
                 moses.forEachi(clients, function(client)
-                    if (not Game.ServerSettings.AllowSpectating or not client.SpectateOnly)
+                    if (disallowSpectating or not client.SpectateOnly)
                         and client.InGame
                         and not client.NeedsMidRoundSync
                     then
                         local clientCharacter = client.Character
-                        local clientSteamID = client.SteamID
+                        local clientAccountId = client.AccountId.StringRepresentation
                         if clientCharacter == nil or clientCharacter.Removed or clientCharacter.IsDead then
-                            local joinedFaction = self._joinedFaction[clientSteamID]
+                            local joinedFaction = self._joinedFaction[clientAccountId]
                             if not joinedFaction then
-                                if not self._promptedJoiningFaction[clientSteamID] then
+                                if not self._promptedJoiningFaction[clientAccountId] then
                                     self:trySortFactions()
                                     factions = factions or moses.clone(self.sortedFactions, true)
                                     factionOptions = factionOptions or moses.mapi(
@@ -520,24 +521,25 @@ function m:initialize()
                                     )
                                     dialog.prompt(l10n "PromptJoinFaction".value, factionOptions, client,
                                         function(option, responder)
+                                            local responderAccountId = responder.AccountId.StringRepresentation
                                             if option == 255 then
-                                                self._promptedJoiningFaction[responder.SteamID] = nil
+                                                self._promptedJoiningFaction[responderAccountId] = nil
                                                 return
                                             end
                                             local faction = factions[option + 1]
                                             if faction:participatory(self.factions, UniversalFactionParticipateKey) then
-                                                faction:addParticipator(UniversalFactionParticipateKey, responder.SteamID)
+                                                faction:addParticipator(UniversalFactionParticipateKey, responderAccountId)
                                                 faction:modifyTickets(UniversalFactionParticipateKey, -1)
-                                                self._remainingLives[responder.SteamID] = faction.maxLives
-                                                self._joinedFaction[responder.SteamID] = faction
+                                                self._remainingLives[responderAccountId] = faction.maxLives
+                                                self._joinedFaction[responderAccountId] = faction
 
                                                 chat.send { l10n "PrivateJoinFactionSuccess":format(
                                                     l10n { "FactionDisplayName", faction.identifier }.altvalue
                                                 ), responder, msgtypes = ChatMessageType.Private }
 
-                                                local steamIDs = moses.clone(faction:tryGetParticipatorsByKeyEvenIfNil(UniversalFactionParticipateKey))
-                                                moses.remove(steamIDs, responder.SteamID)
-                                                local recipients = DFC.GetConnectedClientListBySteamIDs(steamIDs)
+                                                local accountIds = moses.clone(faction:tryGetParticipatorsByKeyEvenIfNil(UniversalFactionParticipateKey))
+                                                moses.remove(accountIds, responderAccountId)
+                                                local recipients = DFC.GetClientListByAccountIds(accountIds)
                                                 if next(recipients) ~= nil then
                                                     local boardcastFactionMessage = l10n "BoardcastTeammateJoinFactionSuccess":format(
                                                         utils.ClientLogName(responder)
@@ -550,19 +552,19 @@ function m:initialize()
                                                 chat.send { l10n "PrivateJoinFactionFailure":format(
                                                     l10n { "FactionDisplayName", faction.identifier }.altvalue
                                                 ), responder, msgtypes = ChatMessageType.Private }
-                                                self._promptedJoiningFaction[responder.SteamID] = nil
+                                                self._promptedJoiningFaction[responderAccountId] = nil
                                             end
                                         end, nil, true)
-                                    self._promptedJoiningFaction[clientSteamID] = true
+                                    self._promptedJoiningFaction[clientAccountId] = true
                                 end
                             elseif joinedFaction.allowRespawn
                                 and joinedFaction.existAnyJob
-                                and not self._assignedJob[clientSteamID]
-                                and not self._waitRespawn[clientSteamID]
-                                and not self._promptedAssigningJob[clientSteamID]
-                                and self._remainingLives[clientSteamID] > 0
+                                and not self._assignedJob[clientAccountId]
+                                and not self._waitRespawn[clientAccountId]
+                                and not self._promptedAssigningJob[clientAccountId]
+                                and self._remainingLives[clientAccountId] > 0
                                 and moses.include(joinedFaction.jobs, function(job)
-                                    return job.liveConsumption <= self._remainingLives[clientSteamID]
+                                    return job.liveConsumption <= self._remainingLives[clientAccountId]
                                 end) then
                                 joinedFaction:trySortJobs()
                                 ---@type dfc.job[]
@@ -578,14 +580,15 @@ function m:initialize()
                                     end)
                                 factionJobs[joinedFaction] = jobs
                                 factionJobOptions[joinedFaction] = jobOptions
-                                dialog.prompt(l10n "PromptAssignJob":format(self._remainingLives[clientSteamID]), jobOptions, client,
+                                dialog.prompt(l10n "PromptAssignJob":format(self._remainingLives[clientAccountId]), jobOptions, client,
                                     function(option, responder)
+                                        local responderAccountId = responder.AccountId.StringRepresentation
                                         if option == 255 then
-                                            self._promptedAssigningJob[responder.SteamID] = nil
+                                            self._promptedAssigningJob[responderAccountId] = nil
                                             return
                                         end
                                         local job = jobs[option + 1]
-                                        local remainingLives = self._remainingLives[responder.SteamID]
+                                        local remainingLives = self._remainingLives[responderAccountId]
                                         if joinedFaction.allowRespawn
                                             and joinedFaction.existAnyJob
                                             and joinedFaction.jobs[job.identifier]
@@ -632,9 +635,9 @@ function m:initialize()
 
                                             job:addParticipator(joinedFaction, spawnedCharacter)
                                             job:modifyTickets(joinedFaction, -1)
-                                            self._remainingLives[responder.SteamID] = math.max(0, remainingLives - job.liveConsumption)
-                                            self._assignedJob[responder.SteamID] = job
-                                            self._characterWaitChooseGearBy[responder.SteamID] = spawnedCharacter
+                                            self._remainingLives[responderAccountId] = remainingLives - job.liveConsumption
+                                            self._assignedJob[responderAccountId] = job
+                                            self._characterWaitChooseGearBy[responderAccountId] = spawnedCharacter
                                             self._characterFaction[spawnedCharacter] = joinedFaction
                                             self._characterJob[spawnedCharacter] = job
 
@@ -645,9 +648,9 @@ function m:initialize()
                                                 )
                                             ), responder, msgtypes = ChatMessageType.Private }
 
-                                            local steamIDs = moses.clone(joinedFaction:tryGetParticipatorsByKeyEvenIfNil(UniversalFactionParticipateKey))
-                                            moses.remove(steamIDs, responder.SteamID)
-                                            local recipients = DFC.GetConnectedClientListBySteamIDs(steamIDs)
+                                            local accountIds = moses.clone(joinedFaction:tryGetParticipatorsByKeyEvenIfNil(UniversalFactionParticipateKey))
+                                            moses.remove(accountIds, responderAccountId)
+                                            local recipients = DFC.GetClientListByAccountIds(accountIds)
                                             if next(recipients) ~= nil then
                                                 local boardcastJobMessage = l10n "BoardcastTeammateAssignJobSuccess":format(
                                                     utils.ClientLogName(responder),
@@ -664,12 +667,12 @@ function m:initialize()
                                             chat.send { l10n "PrivateAssignJobFailure":format(
                                                 l10n { "JobDisplayName", job.identifier }.altvalue
                                             ), responder, msgtypes = ChatMessageType.Private }
-                                            self._promptedAssigningJob[responder.SteamID] = nil
+                                            self._promptedAssigningJob[responderAccountId] = nil
                                         end
                                     end, nil, true)
-                                self._promptedAssigningJob[clientSteamID] = true
+                                self._promptedAssigningJob[clientAccountId] = true
                             end
-                        elseif self._characterWaitChooseGearBy[clientSteamID] == clientCharacter then
+                        elseif self._characterWaitChooseGearBy[clientAccountId] == clientCharacter then
                             local job = self._characterJob[clientCharacter]
                             if job and job.existAnyGear
                                 and not self._chosenGear[clientCharacter]
@@ -692,6 +695,7 @@ function m:initialize()
                                 jobGearOptions[job] = gearOptions
                                 dialog.prompt(l10n "PromptChooseGear".value, gearOptions, client,
                                     function(option, responder)
+                                        local responderAccountId = responder.AccountId.StringRepresentation
                                         if option == 255 then
                                             self._promptedChoosingGear[clientCharacter] = nil
                                             return
@@ -714,9 +718,9 @@ function m:initialize()
                                                     l10n { "GearDisplayName", gear.identifier }.altvalue
                                                 )
                                             ), responder, msgtypes = ChatMessageType.Private }
-                                            local steamIDs = moses.clone(faction:tryGetParticipatorsByKeyEvenIfNil(UniversalFactionParticipateKey))
-                                            moses.remove(steamIDs, responder.SteamID)
-                                            local recipients = DFC.GetConnectedClientListBySteamIDs(steamIDs)
+                                            local accountIds = moses.clone(faction:tryGetParticipatorsByKeyEvenIfNil(UniversalFactionParticipateKey))
+                                            moses.remove(accountIds, responderAccountId)
+                                            local recipients = DFC.GetClientListByAccountIds(accountIds)
                                             if next(recipients) ~= nil then
                                                 local boardcastGearMessage = l10n "BoardcastTeammateChooseGearSuccess":format(
                                                     utils.ClientLogName(responder),
@@ -757,11 +761,11 @@ function m:initialize()
                                 self._characterJob[dead] = nil
                                 self._chosenGear[dead] = nil
                                 self._promptedChoosingGear[dead] = nil
-                                local clientSteamID = moses.invert(self._characterWaitChooseGearBy)[dead]
-                                if clientSteamID then
-                                    self._assignedJob[clientSteamID] = nil
-                                    self._promptedAssigningJob[clientSteamID] = nil
-                                    self._waitRespawn[clientSteamID] = true
+                                local clientAccountId = moses.invert(self._characterWaitChooseGearBy)[dead]
+                                if clientAccountId then
+                                    self._assignedJob[clientAccountId] = nil
+                                    self._promptedAssigningJob[clientAccountId] = nil
+                                    self._waitRespawn[clientAccountId] = true
                                 end
                             end
                         end
@@ -783,10 +787,10 @@ function m:initialize()
         DSSI.Hook("client.disconnected", "DFC",
             ---@param client Barotrauma.Networking.Client
             function(client)
-                local clientSteamID = client.SteamID
-                self._promptedJoiningFaction[clientSteamID] = nil
-                self._promptedAssigningJob[clientSteamID] = nil
-                local character = self._characterWaitChooseGearBy[clientSteamID]
+                local clientAccountId = client.AccountId.StringRepresentation
+                self._promptedJoiningFaction[clientAccountId] = nil
+                self._promptedAssigningJob[clientAccountId] = nil
+                local character = self._characterWaitChooseGearBy[clientAccountId]
                 if character then
                     self._promptedChoosingGear[character] = nil
                 end
