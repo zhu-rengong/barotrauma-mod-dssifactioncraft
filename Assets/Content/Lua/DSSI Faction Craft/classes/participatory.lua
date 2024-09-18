@@ -10,6 +10,8 @@ m.participantTickets = -1
 m.participantNumberLimit = -1
 m.participantWeight = 0
 
+local DefaultParticipateKey = {}
+
 function m:__init()
     self:resetParticipatoryDatas()
 end
@@ -22,6 +24,7 @@ end
 ---@param key? unknown
 ---@return unknown[]
 function m:tryGetParticipatorsByKeyEvenIfNil(key)
+    key = key == nil and DefaultParticipateKey or key
     if self._participators[key] == nil then
         self._participators[key] = {}
     end

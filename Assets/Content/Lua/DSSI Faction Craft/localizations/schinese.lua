@@ -5,7 +5,7 @@ return {
     PromptAssignJob = "请选择你意愿的职业。(剩余生命：{1})",
     PromptChooseGear = "请你选择一套初始装备。",
     PrivateJoinFactionSuccess = "你加入了“{1}”派系。",
-    BoardcastTeammateJoinFactionSuccess = "{1}加入了你们的派系。",
+    BoardcastTeammateJoinFactionSuccess = "{1}加入了派系“{2}”。",
     PrivateJoinFactionFailure = "你暂时无法加入“{1}”派系，原因可能是1)该阵营的人数已满，2)超出了人数比例，3)入场券数量不够。",
     JobLiveConsumption = "消耗：{1} 生命",
     PrivateAssignJobSuccess = "你的职业被分配为“{1}”。",

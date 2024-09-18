@@ -520,13 +520,14 @@ function m:initialize()
                                         end
                                     )
                                     dialog.prompt(l10n "PromptJoinFaction".value, factionOptions, client,
-                                        function(option, responder)
+                                        function(option_index, responder)
                                             local responderAccountId = responder.AccountId.StringRepresentation
-                                            if option == 255 then
+                                            if option_index == 255 then
                                                 self._promptedJoiningFaction[responderAccountId] = nil
                                                 return
                                             end
-                                            local faction = factions[option + 1]
+                                            local option = option_index + 1
+                                            local faction = factions[option]
                                             if faction:participatory(self.factions, UniversalFactionParticipateKey) then
                                                 faction:addParticipator(UniversalFactionParticipateKey, responderAccountId)
                                                 faction:modifyTickets(UniversalFactionParticipateKey, -1)
@@ -537,17 +538,17 @@ function m:initialize()
                                                     l10n { "FactionDisplayName", faction.identifier }.altvalue
                                                 ), responder, msgtypes = ChatMessageType.Private }
 
-                                                local accountIds = moses.clone(faction:tryGetParticipatorsByKeyEvenIfNil(UniversalFactionParticipateKey))
-                                                moses.remove(accountIds, responderAccountId)
-                                                local recipients = DFC.GetClientListByAccountIds(accountIds)
-                                                if next(recipients) ~= nil then
-                                                    local boardcastFactionMessage = l10n "BoardcastTeammateJoinFactionSuccess":format(
-                                                        utils.ClientLogName(responder)
-                                                    )
-                                                    moses.forEachi(recipients, function(recipient)
-                                                        chat.send { boardcastFactionMessage, recipient, msgtypes = ChatMessageType.Private }
-                                                    end)
-                                                end
+                                                local boardcastFactionMessage = l10n "BoardcastTeammateJoinFactionSuccess":format(
+                                                    utils.ClientLogName(responder),
+                                                    l10n { "FactionDisplayName", faction.identifier }.altvalue
+                                                )
+                                                Lub.Chat.boardcast {
+                                                    boardcastFactionMessage,
+                                                    msgtypes = ChatMessageType.Private,
+                                                    filter = function(client)
+                                                        return client ~= responder
+                                                    end
+                                                }
                                             else
                                                 chat.send { l10n "PrivateJoinFactionFailure":format(
                                                     l10n { "FactionDisplayName", faction.identifier }.altvalue
@@ -581,13 +582,14 @@ function m:initialize()
                                 factionJobs[joinedFaction] = jobs
                                 factionJobOptions[joinedFaction] = jobOptions
                                 dialog.prompt(l10n "PromptAssignJob":format(self._remainingLives[clientAccountId]), jobOptions, client,
-                                    function(option, responder)
+                                    function(option_index, responder)
                                         local responderAccountId = responder.AccountId.StringRepresentation
-                                        if option == 255 then
+                                        if option_index == 255 then
                                             self._promptedAssigningJob[responderAccountId] = nil
                                             return
                                         end
-                                        local job = jobs[option + 1]
+                                        local option = option_index + 1
+                                        local job = jobs[option]
                                         local remainingLives = self._remainingLives[responderAccountId]
                                         if joinedFaction.allowRespawn
                                             and joinedFaction.existAnyJob
@@ -609,7 +611,7 @@ function m:initialize()
                                             local spawnedCharacter
                                             if job.human then
                                                 local variant = job.jobPrefab and math.random(0, job.jobPrefab.Variants - 1) or 0
-                                                local characterInfo = CharacterInfo(CharacterPrefab.HumanSpeciesName, responder.Name, nil, job.jobPrefab, nil, variant, nil, nil)
+                                                local characterInfo = CharacterInfo(CharacterPrefab.HumanSpeciesName, responder.Name, nil, job.jobPrefab, variant, RandSync.Unsynced, nil)
                                                 spawnedCharacter = Character.Create(characterInfo, spawnPosition, ToolBox.RandomSeed(8))
                                             else
                                                 spawnedCharacter = Character.Create(job.characterPrefab, spawnPosition, ToolBox.RandomSeed(8))
@@ -643,7 +645,7 @@ function m:initialize()
 
                                             chat.send { l10n "PrivateAssignJobSuccess":format(
                                                 ("[%i] %s"):format(
-                                                    option + 1,
+                                                    option,
                                                     l10n { "JobDisplayName", job.identifier }.altvalue
                                                 )
                                             ), responder, msgtypes = ChatMessageType.Private }
@@ -651,18 +653,20 @@ function m:initialize()
                                             local accountIds = moses.clone(joinedFaction:tryGetParticipatorsByKeyEvenIfNil(UniversalFactionParticipateKey))
                                             moses.remove(accountIds, responderAccountId)
                                             local recipients = DFC.GetClientListByAccountIds(accountIds)
-                                            if next(recipients) ~= nil then
-                                                local boardcastJobMessage = l10n "BoardcastTeammateAssignJobSuccess":format(
-                                                    utils.ClientLogName(responder),
-                                                    ("[%i] %s"):format(
-                                                        option + 1,
-                                                        l10n { "JobDisplayName", job.identifier }.altvalue
-                                                    )
+                                            local boardcastJobMessage = l10n "BoardcastTeammateAssignJobSuccess":format(
+                                                utils.ClientLogName(responder),
+                                                ("[%i] %s"):format(
+                                                    option,
+                                                    l10n { "JobDisplayName", job.identifier }.altvalue
                                                 )
-                                                moses.forEachi(recipients, function(recipient)
-                                                    chat.send { boardcastJobMessage, recipient, msgtypes = ChatMessageType.Private }
-                                                end)
-                                            end
+                                            )
+                                            Lub.Chat.boardcast {
+                                                boardcastJobMessage,
+                                                msgtypes = ChatMessageType.Private,
+                                                filter = function(client)
+                                                    return moses.include(recipients, client) or client.SpectateOnly
+                                                end
+                                            }
                                         else
                                             chat.send { l10n "PrivateAssignJobFailure":format(
                                                 l10n { "JobDisplayName", job.identifier }.altvalue
@@ -694,13 +698,14 @@ function m:initialize()
                                 jobGears[job] = gears
                                 jobGearOptions[job] = gearOptions
                                 dialog.prompt(l10n "PromptChooseGear".value, gearOptions, client,
-                                    function(option, responder)
+                                    function(option_index, responder)
                                         local responderAccountId = responder.AccountId.StringRepresentation
-                                        if option == 255 then
+                                        if option_index == 255 then
                                             self._promptedChoosingGear[clientCharacter] = nil
                                             return
                                         end
-                                        local gear = gears[option + 1]
+                                        local option = option_index + 1
+                                        local gear = gears[option]
                                         if job.existAnyGear
                                             and job.gears[gear.identifier]
                                             and gear:participatory(job.gears, faction)
@@ -714,25 +719,27 @@ function m:initialize()
 
                                             chat.send { l10n "PrivateChooseGearSuccess":format(
                                                 ("[%i] %s"):format(
-                                                    option + 1,
+                                                    option,
                                                     l10n { "GearDisplayName", gear.identifier }.altvalue
                                                 )
                                             ), responder, msgtypes = ChatMessageType.Private }
                                             local accountIds = moses.clone(faction:tryGetParticipatorsByKeyEvenIfNil(UniversalFactionParticipateKey))
                                             moses.remove(accountIds, responderAccountId)
                                             local recipients = DFC.GetClientListByAccountIds(accountIds)
-                                            if next(recipients) ~= nil then
-                                                local boardcastGearMessage = l10n "BoardcastTeammateChooseGearSuccess":format(
-                                                    utils.ClientLogName(responder),
-                                                    ("[%i] %s"):format(
-                                                        option + 1,
-                                                        l10n { "GearDisplayName", gear.identifier }.altvalue
-                                                    )
+                                            local boardcastGearMessage = l10n "BoardcastTeammateChooseGearSuccess":format(
+                                                utils.ClientLogName(responder),
+                                                ("[%i] %s"):format(
+                                                    option,
+                                                    l10n { "GearDisplayName", gear.identifier }.altvalue
                                                 )
-                                                moses.forEachi(recipients, function(recipient)
-                                                    chat.send { boardcastGearMessage, recipient, msgtypes = ChatMessageType.Private }
-                                                end)
-                                            end
+                                            )
+                                            Lub.Chat.boardcast {
+                                                boardcastGearMessage,
+                                                msgtypes = ChatMessageType.Private,
+                                                filter = function(client)
+                                                    return moses.include(recipients, client) or client.SpectateOnly
+                                                end
+                                            }
                                         else
                                             chat.send { l10n "PrivateChooseGearFailure":format(
                                                 l10n { "GearDisplayName", gear.identifier }.altvalue
