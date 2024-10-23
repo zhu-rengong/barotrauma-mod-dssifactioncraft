@@ -48,9 +48,10 @@
   <entitydescription.dfc_itembuilder>Property ‖color:gui.yellow‖Item Builds‖end‖ loaded a lua table that describe the process of spawning items. When receive a signal and its source is a character, all items will spawn in the inventory of the character, otherwise spawning at the location of the item builder. Link to ‖color:0.2,0.2,1.0‖Region+‖color:end‖ to create a group of the regions as the range of spawning.</entitydescription.dfc_itembuilder>
   <entityname.dfc_itembatch>Item Batch</entityname.dfc_itembatch>
   <entitydescription.dfc_itembatch>Property ‖color:gui.yellow‖Item Batch Unit‖end‖ loaded a lua table that describe the process of batching items. When receive a signal, all linked items will be batched. Except for that, if the sender of the signal is a character, it will batch all items in the inventory of the character.</entitydescription.dfc_itembatch>
-  <entityname.dfc_luacomponent>Lua Component 8IO</entityname.dfc_luacomponent>
-  <entityname.dfc_luacomponent16io>Lua Component 16IO</entityname.dfc_luacomponent16io>
-  <entitydescription.dfc_luacomponent>‖color:gui.yellow‖inp[]‖end‖ is used to register inputs&#xA;‖color:gui.yellow‖out[]‖end‖ is used to send signals&#xA;‖color:gui.yellow‖mem[]‖end‖ is used to store temporary datas&#xA;‖color:gui.yellow‖flip‖end‖ determines whether the submarine is flipped or not.&#xA;‖color:gui.yellow‖sender[]‖end‖ is used to get the corresponding sender.</entitydescription.dfc_luacomponent>
+  <entityname.dfc_luacomponent>Lua2 Component (Original: Lua Component 8IO)</entityname.dfc_luacomponent>
+  <entityname.dfc_luacomponent16io>Lua2 Component (Original: Lua Component 8IO)</entityname.dfc_luacomponent16io>
+  <entityname.dfc_lua2component>Lua2 Component</entityname.dfc_lua2component>
+  <entitydescription.dfc_lua2component>With 32 parallel IOs, upvalues ​​are accessed through closure contexts, which reduces performance burden and removes environment constraints.</entitydescription.dfc_lua2component>
 
   <entityname.dfc_scriptwearabledyeing>Script-WearableDyeing</entityname.dfc_scriptwearabledyeing>
   <entitydescription.dfc_scriptwearabledyeing>When a character equips an item, its color changes.</entitydescription.dfc_scriptwearabledyeing>
@@ -74,9 +75,6 @@
   <sp.dfcteleporter.cooldown.description>Global cooldown time to wait after teleporting.</sp.dfcteleporter.cooldown.description>
   <sp.dfcsynchronous.allowsynchronization.description>Allow synchronized signal output in Multiplayer (recommended to disable if not necessary).</sp.dfcsynchronous.allowsynchronization.description>
   <sp.dfcsynchronous.synchinterval.description>Sync interval in seconds</sp.dfcsynchronous.synchinterval.description>
-  <sp.dfcluacomponent.isolation.description>Isolate script environment</sp.dfcluacomponent.isolation.description>
-  <sp.dfcluacomponent.chunk.description>the chunk consists of Lua statements. The function prototype is pre-declared. Argument inp[] refers to an array that stores received signal value. Argument out[] refers to an array to determine outputs. Argument mem[] refers to a table, which can store data. Argument flip indicates whether the component is in the X flip state.</sp.dfcluacomponent.chunk.description>
-  <sp.dfcluacomponent.jsonstoredata.description>A JSON data will be converted to a table and will be referenced by mem[] when compilation completes.</sp.dfcluacomponent.jsonstoredata.description>
   <sp.dfccharacterresponder.chunk.description>It's required to return a chunk. The responded character will be passed in the first parameter of the function.</sp.dfccharacterresponder.chunk.description>
   <sp.dfccharacterresponder.canresponse.description>Can Response?</sp.dfccharacterresponder.canresponse.description>
   <sp.dfccharacterresponder.applytosender.description>Can response to the sender of the signal?</sp.dfccharacterresponder.applytosender.description>

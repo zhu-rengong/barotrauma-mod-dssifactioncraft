@@ -48,9 +48,8 @@
   <entitydescription.dfc_itembuilder>属性‖color:gui.yellow‖Item Builds 物品构建集‖end‖存储了一个lua脚本的Table，用于描述物品生成信息，该组件在接受到信号之后，会查找该信号的发送者，如若找到发送信号的角色，则将物品生成在角色身上，否则生成在该物品生成器所在的位置，通过链接(link) ‖color:0.2,0.2,1.0‖包含区域‖color:end‖ 可以改变物品生成的位置。</entitydescription.dfc_itembuilder>
   <entityname.dfc_itembatch>物品批处理器</entityname.dfc_itembatch>
   <entitydescription.dfc_itembatch>属性‖color:gui.yellow‖Item Batch Unit 批处理单元‖end‖存储了一个lua脚本的Table，用于描述物品批处理过程，该组件在接受到信号之后，会对其链接(link)的所有物品进行批处理，除此之外还会查找该信号的发送者，如若找到发送信号的角色，则也会对角色身上的物品进行批处理。</entitydescription.dfc_itembatch>
-  <entityname.dfc_luacomponent>Lua组件</entityname.dfc_luacomponent>
-  <entityname.dfc_luacomponent16io>Lua组件16IO口</entityname.dfc_luacomponent16io>
-  <entitydescription.dfc_luacomponent>‖color:gui.yellow‖inp[]‖end‖ 用作接受信号输入&#xA;‖color:gui.yellow‖out[]‖end‖ 用作产生信号输出&#xA;‖color:gui.yellow‖mem[]‖end‖ 用作寄存临时数据&#xA;‖color:gui.yellow‖flip‖end‖ 判断所在潜艇是否翻转&#xA;‖color:gui.yellow‖sender[]‖end‖ 用于获取对应的发送者</entitydescription.dfc_luacomponent>
+  <entityname.dfc_luacomponent>Lua2组件(原为Lua组件)</entityname.dfc_luacomponent>
+  <entityname.dfc_luacomponent16io>Lua2组件(原为Lua组件16IO口)</entityname.dfc_luacomponent16io>
   <entityname.dfc_lua2component>Lua组件2代</entityname.dfc_lua2component>
   <entitydescription.dfc_lua2component>拥有32个并排IO，通过闭包上下文访问upvalues，减轻了性能负担，并撤除了环境约束。</entitydescription.dfc_lua2component>
 
@@ -76,9 +75,6 @@
   <sp.dfcteleporter.cooldown.description>传送后需要等待的全局冷却时间，而非为每个角色单独计算冷却。</sp.dfcteleporter.cooldown.description>
   <sp.dfcsynchronous.allowsynchronization.description>允许在联机同步信号输出（如果无必要，建议禁用）。</sp.dfcsynchronous.allowsynchronization.description>
   <sp.dfcsynchronous.synchinterval.description>同步间隔（秒）</sp.dfcsynchronous.synchinterval.description>
-  <sp.dfcluacomponent.isolation.description>隔离脚本环境</sp.dfcluacomponent.isolation.description>
-  <sp.dfcluacomponent.chunk.description>编程块，由lua语句组成，函数原型预声明，实参inp引用了一个数组，使用输入引脚的序号索引对应接受到的信号值；实参out引用了一个数组，使用输出引脚的序号存储键值以在对应的引脚输出信号值；实参mem引用了一个Table，可以寄存数据；实参flip表示组件是否为X轴翻转状态。</sp.dfcluacomponent.chunk.description>
-  <sp.dfcluacomponent.jsonstoredata.description>一个json数据，在游戏初始化后将json数据转换成Table并存储至mem。</sp.dfcluacomponent.jsonstoredata.description>
   <sp.dfccharacterresponder.chunk.description>要求返回一个Lua脚本的(闭包)函数，被响应的角色会传入该函数的第一个参数。</sp.dfccharacterresponder.chunk.description>
   <sp.dfccharacterresponder.canresponse.description>是否可以响应？</sp.dfccharacterresponder.canresponse.description>
   <sp.dfccharacterresponder.applytosender.description>是否应用给信号的发送者？</sp.dfccharacterresponder.applytosender.description>
