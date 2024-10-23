@@ -319,8 +319,7 @@ function m:initialize()
             "DFC",
             "Barotrauma.Networking.RespawnManager", "RespawnCharacters",
             {
-                "Microsoft.Xna.Framework.Vector2",
-                "out System.Boolean",
+                "Barotrauma.Networking.RespawnManager+TeamSpecificState",
             }, function(_, ptable)
                 moses.clear(self._waitRespawn)
                 ptable.PreventExecution = true
@@ -463,8 +462,7 @@ function m:initialize()
                 "DFC",
                 "Barotrauma.Networking.RespawnManager", "RespawnCharacters",
                 {
-                    "Microsoft.Xna.Framework.Vector2",
-                    "out System.Boolean",
+                    "Barotrauma.Networking.RespawnManager+TeamSpecificState",
                 },
                 Hook.HookMethodType.Before
             )
@@ -612,6 +610,7 @@ function m:initialize()
                                             if job.human then
                                                 local variant = job.jobPrefab and math.random(0, job.jobPrefab.Variants - 1) or 0
                                                 local characterInfo = CharacterInfo(CharacterPrefab.HumanSpeciesName, responder.Name, nil, job.jobPrefab, variant, RandSync.Unsynced, nil)
+                                                characterInfo.TeamID = joinedFaction.teamID
                                                 spawnedCharacter = Character.Create(characterInfo, spawnPosition, ToolBox.RandomSeed(8))
                                             else
                                                 spawnedCharacter = Character.Create(job.characterPrefab, spawnPosition, ToolBox.RandomSeed(8))
@@ -624,14 +623,11 @@ function m:initialize()
                                                 spawnPointSet:addCharacterTagsFor(spawnedCharacter)
                                             end
 
-                                            spawnedCharacter.GiveJobItems(spawnPoint)
+                                            spawnedCharacter.GiveJobItems(false, spawnPoint)
                                             spawnedCharacter.GiveIdCardTags(spawnPoint, true)
-                                            spawnedCharacter.TeamID = joinedFaction.teamID
-                                            spawnedCharacter.SetOriginalTeam(joinedFaction.teamID)
-                                            spawnedCharacter.UpdateTeam()
-                                            responder.Character = spawnedCharacter
-                                            spawnedCharacter.SetOwnerClient(responder)
                                             responder.SetClientCharacter(spawnedCharacter)
+                                            -- spawnedCharacter.SetOwnerClient(responder)
+                                            responder.TeamID = spawnedCharacter.TeamID
                                             if joinedFaction.onJoined then joinedFaction.onJoined(spawnedCharacter) end
                                             if job.onAssigned then job.onAssigned(spawnedCharacter) end
 
