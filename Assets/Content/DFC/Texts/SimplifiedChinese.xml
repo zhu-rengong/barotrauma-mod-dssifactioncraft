@@ -179,4 +179,7 @@
   <entitydescription.dfc_whiteback></entitydescription.dfc_whiteback>
   <entityname.dfc_solidlight>固体光</entityname.dfc_solidlight>
   <entitydescription.dfc_solidlight></entitydescription.dfc_solidlight>
+
+  <dfc.respawningin>阵营“[faction]”将在[time]后重生……</dfc.respawningin>
+  <dfc.respawned>阵营“[faction]”已重生！</dfc.respawned>
 </infotexts>

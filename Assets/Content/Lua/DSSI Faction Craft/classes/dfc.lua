@@ -281,6 +281,9 @@ function m:initialize()
     if SERVER then
         if self.allowRespawn ~= nil then
             Game.ServerSettings.RespawnMode = self.allowRespawn and 0 or 1
+            if self.allowRespawn then
+                DFC.OverrideRespawnManager = true
+            end
         end
 
         chat.addcommand({
@@ -314,17 +317,6 @@ function m:initialize()
             hidden = true,
             permissions = ClientPermissions.All
         })
-
-        Hook.Patch(
-            "DFC",
-            "Barotrauma.Networking.RespawnManager", "RespawnCharacters",
-            {
-                "Barotrauma.Networking.RespawnManager+TeamSpecificState",
-            }, function(_, ptable)
-                moses.clear(self._waitRespawn)
-                ptable.PreventExecution = true
-            end, Hook.HookMethodType.Before
-        )
 
         moses.forEachi(Client.ClientList, function(client)
             table.insert(self._firstPlayerAccountIds, client.AccountId.StringRepresentation)
@@ -458,14 +450,7 @@ function m:initialize()
             chat.removecommand("!fixprompt")
             chat.removecommand("!rejoin")
 
-            Hook.RemovePatch(
-                "DFC",
-                "Barotrauma.Networking.RespawnManager", "RespawnCharacters",
-                {
-                    "Barotrauma.Networking.RespawnManager+TeamSpecificState",
-                },
-                Hook.HookMethodType.Before
-            )
+            DFC.OverrideRespawnManager = false
         end
     end)
 

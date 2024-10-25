@@ -7,6 +7,7 @@ using Barotrauma;
 using Microsoft.Xna.Framework;
 using MoonSharp.Interpreter;
 using DSSIFactionCraft.Items.Components;
+using HarmonyLib;
 
 #if CLIENT
 [assembly: IgnoresAccessChecksTo("Barotrauma")]
@@ -20,14 +21,23 @@ namespace DSSIFactionCraft
 {
     public partial class Plugin : IAssemblyPlugin
     {
+        private Harmony harmony;
+
         public void Initialize()
         {
-
+            harmony = new Harmony("dfc");
+            harmony.PatchAll();
         }
 
         public void OnLoadCompleted()
         {
-            GameMain.LuaCs.Lua.Globals["DFC"] = DynValue.NewTable(GameMain.LuaCs.Lua);
+            UserData.RegisterType<DfcNewSpawnPointSet>();
+            UserData.RegisterType<DfcNewFaction>();
+            UserData.RegisterType<DfcNewJob>();
+            UserData.RegisterType<DfcNewGear>();
+
+            ModuleRegister.RegisterModuleType<DFCModule>(GameMain.LuaCs.Lua.Globals);
+
             RuntimeHelpers.RunClassConstructor(typeof(CharacterUtils).TypeHandle);
             RuntimeHelpers.RunClassConstructor(typeof(XMLExtensions).TypeHandle);
             RuntimeHelpers.RunClassConstructor(typeof(DfcScriptWifiInitializer).TypeHandle);
@@ -41,7 +51,8 @@ namespace DSSIFactionCraft
 
         public void Dispose()
         {
-
+            harmony?.UnpatchAll();
+            harmony = null;
         }
     }
 }

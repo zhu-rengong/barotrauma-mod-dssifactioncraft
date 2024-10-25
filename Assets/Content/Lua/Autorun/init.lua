@@ -3,17 +3,7 @@ if not (SERVER or Game.IsSingleplayer) then return end
 local log = require "utilbelt.logger" ("DFC")
 local l10n = require "utilbelt.l10n"
 
-DFC = DFC or {}
 DFC.Path = ...
-DFC.Components = {}
-LuaUserData.RegisterType("DSSIFactionCraft.Items.Components.DfcNewSpawnPointSet")
-DFC.Components.DfcNewSpawnPointSet = LuaUserData.CreateStatic("DSSIFactionCraft.Items.Components.DfcNewSpawnPointSet")
-LuaUserData.RegisterType("DSSIFactionCraft.Items.Components.DfcNewFaction")
-DFC.Components.DfcNewFaction = LuaUserData.CreateStatic("DSSIFactionCraft.Items.Components.DfcNewFaction")
-LuaUserData.RegisterType("DSSIFactionCraft.Items.Components.DfcNewJob")
-DFC.Components.DfcNewJob = LuaUserData.CreateStatic("DSSIFactionCraft.Items.Components.DfcNewJob")
-LuaUserData.RegisterType("DSSIFactionCraft.Items.Components.DfcNewGear")
-DFC.Components.DfcNewGear = LuaUserData.CreateStatic("DSSIFactionCraft.Items.Components.DfcNewGear")
 
 l10n.loadlangs(DFC.Path .. "/Lua/DSSI Faction Craft/localizations")
 
@@ -41,12 +31,8 @@ Hook.Add("dssi.inject.after", "DFC",
                     local attributeValue = attribute.Value:lower()
                     if attributeName == "allowrespawn" then
                         dfc.allowRespawn = attributeValue == "true"
-                        log(("Initializer.AllowRespawn = %s"):format(tostring(dfc.allowRespawn)))
-                    else
-                        if attributeName == "allowmidroundjoin" then
-                            dfc.allowMidRoundJoin = attributeValue == "true"
-                            log(("Initializer.AllowMidRoundJoin = %s"):format(tostring(dfc.allowMidRoundJoin)))
-                        end
+                    elseif attributeName == "allowmidroundjoin" then
+                        dfc.allowMidRoundJoin = attributeValue == "true"
                     end
                 end
                 dfc:initialize()

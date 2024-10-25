@@ -19,3 +19,6 @@ DFC.XMLExtensions = {}
 ---@param xpath string
 ---@return System.Xml.Linq.XElement[]
 function DFC.XMLExtensions.XPathSelectElements(submarineElement, xpath) end
+
+
+
