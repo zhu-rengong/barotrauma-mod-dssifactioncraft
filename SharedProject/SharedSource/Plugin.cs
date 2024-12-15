@@ -26,6 +26,7 @@ namespace DSSIFactionCraft
         public void Initialize()
         {
             harmony = new Harmony("dfc");
+            LuaCsLogger.LogMessage($"Patching {harmony}...");
             harmony.PatchAll();
         }
 
