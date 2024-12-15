@@ -17,7 +17,9 @@ namespace DSSIFactionCraft.Networking
             public readonly string FactionIdentifier;
             public DateTime RespawnTime;
             public bool RespawnCountdownStarted;
-            public DynValue Table;
+            public bool AllowRespawn => DFCModule.Factions is DynValue { Type: DataType.Table } factions
+                    && factions.Table.RawGet(FactionIdentifier) is DynValue { Type: DataType.Table } faction
+                    && faction.Table.RawGet("allowRespawn") is DynValue { Type: DataType.Boolean, Boolean: true } allowRespawn;
 
             public FactionSpecificState(string factionIdentifier)
             {
@@ -54,6 +56,8 @@ namespace DSSIFactionCraft.Networking
             {
                 foreach (var factionSpecificState in factionSpecificStates.Values)
                 {
+                    if (!factionSpecificState.AllowRespawn) { continue; }
+
                     bool shouldStartCountdown = DFCModule.WaitRespawn.Table.Pairs.Any(IsClientWaitingForRespawnInFactionSpecific);
 
                     bool IsClientWaitingForRespawnInFactionSpecific(TablePair waitRespawnPair)
@@ -81,7 +85,7 @@ namespace DSSIFactionCraft.Networking
                             {
                                 factionSpecificState.RespawnTime = DateTime.Now + new TimeSpan(0, 0, 0, 0, (int)(GameMain.Server.ServerSettings.RespawnInterval * 1000.0f));
 
-                                float timeLeft = (float)(factionSpecificState.RespawnTime - DateTime.Now).TotalSeconds;
+                                float timeLeft = MathF.Ceiling((float)(factionSpecificState.RespawnTime - DateTime.Now).TotalSeconds);
                                 LocalizedString respawnText = TextManager.GetWithVariables(
                                     "dfc.respawningin",
                                     ("[faction]", GetFactionDisplayName()),
