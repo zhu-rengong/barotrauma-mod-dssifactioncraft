@@ -33,6 +33,8 @@ Hook.Add("dssi.inject.after", "DFC",
                         dfc.allowRespawn = attributeValue == "true"
                     elseif attributeName == "allowmidroundjoin" then
                         dfc.allowMidRoundJoin = attributeValue == "true"
+                    elseif attributeName == "autoparticipatewhennochoices" then
+                        dfc.autoParticipateWhenNoChoices = attributeValue == "true"
                     end
                 end
                 dfc:initialize()

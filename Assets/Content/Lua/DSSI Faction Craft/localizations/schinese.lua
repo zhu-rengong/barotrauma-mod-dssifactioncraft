@@ -1,5 +1,6 @@
 return {
     [[Simplified Chinese]],
+    Unknown = "未知的",
     ParticipatoryStatistic = "{1} | 量:{2}/{3} | 剩:{4} | 率:{5}% ({6} {7}/{8})",
     PromptJoinFaction = "请问您想加入哪方派系？",
     PromptAssignJob = "请选择你意愿的职业。(剩余生命：{1})",

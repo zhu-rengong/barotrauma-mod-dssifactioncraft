@@ -32,9 +32,9 @@ function m:tryGetParticipatorsByKeyEvenIfNil(key)
 end
 
 
----@param key? unknown
 ---@param participator unknown
-function m:addParticipator(key, participator)
+---@param key? unknown
+function m:addParticipator(participator, key)
     local participators = self:tryGetParticipatorsByKeyEvenIfNil(key)
     table.insert(participators, participator)
 end
@@ -50,50 +50,52 @@ end
 ---@param key? unknown
 ---@return number
 function m:countParticipators(key)
-    local participators = key and self._participators[key]
-    return participators and #participators or 0
+    key = key or DefaultParticipateKey
+    local participators = self:tryGetParticipatorsByKeyEvenIfNil(key)
+    return #participators
 end
 
 ---@param key? unknown
 ---@return number
 function m:countTickets(key)
-    if key == nil then return 0 end
+    key = key or DefaultParticipateKey
     if self._tickets[key] == nil then
         self._tickets[key] = self.participantTickets
     end
     return self._tickets[key]
 end
 
+---@param number integer
 ---@param key? unknown
----@param number unknown
-function m:modifyTickets(key, number)
-    if key == nil then return end
+function m:modifyTickets(number, key)
+    key = key or DefaultParticipateKey
     local tickets = self:countTickets(key)
     self._tickets[key] = tickets + number
 end
 
----@param key? unknown
 ---@param participatoryGroup { [unknown]:dfc.participatory }
+---@param key? unknown
 ---@return number
-function m:countGroupParticipators(key, participatoryGroup)
+function m:countGroupParticipators(participatoryGroup, key)
     return moses.reduce(participatoryGroup, function(state, current)
         return state + current:countParticipators(key)
     end, 0)
 end
 
----@param key? unknown
+---@param statisticalName? string
 ---@param participatoryGroup { [unknown]:dfc.participatory }
+---@param key? unknown
 ---@vararg string # keys for finding localized text
 ---@return string
-function m:statistic(participatoryGroup, key, ...)
+function m:statistic(statisticalName, participatoryGroup, key)
     local number = self:countParticipators(key)
     local tickets = self:countTickets(key)
-    local total = self:countGroupParticipators(key, participatoryGroup)
+    local total = self:countGroupParticipators(participatoryGroup, key)
     local weights = self:calculateGroupWeights(participatoryGroup)
     local ratio = self.participantWeight / weights
     local proportion = number / total
     return l10n { "ParticipatoryStatistic" }:format(
-        l10n { ..., self.identifier }.altvalue,
+        statisticalName or l10n { "Unknown" }.value,
         number,
         self.participantNumberLimit >= 0 and self.participantNumberLimit or '∞',
         tickets >= 0 and tickets or '∞',
@@ -104,17 +106,17 @@ function m:statistic(participatoryGroup, key, ...)
 end
 
 ---@param participatoryGroup { [unknown]:dfc.participatory }
----@param key? unknown # default: '_'
+---@param key? unknown
 ---@return boolean
 function m:participatory(participatoryGroup, key)
-    key = key or '_'
+    key = key or DefaultParticipateKey
     if self:countTickets(key) == 0 then return false end
     local number = self:countParticipators(key)
     if self.participantNumberLimit >= 0 and number >= self.participantNumberLimit then return false end
     local weights = self:calculateGroupWeights(participatoryGroup)
     if weights > 0 then
         local ratio = self.participantWeight / weights
-        local total = self:countGroupParticipators(key, participatoryGroup)
+        local total = self:countGroupParticipators(participatoryGroup, key)
         if ratio > 0 and total > 0 then
             local proportion = number / total
             if proportion > ratio then return false end

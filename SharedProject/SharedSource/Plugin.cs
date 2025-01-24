@@ -37,7 +37,7 @@ namespace DSSIFactionCraft
             UserData.RegisterType<DfcNewJob>();
             UserData.RegisterType<DfcNewGear>();
 
-            ModuleRegister.RegisterModuleType<DFCModule>(GameMain.LuaCs.Lua.Globals);
+            ModuleRegister.RegisterModuleType<DfcModule>(GameMain.LuaCs.Lua.Globals);
 
             RuntimeHelpers.RunClassConstructor(typeof(CharacterUtils).TypeHandle);
             RuntimeHelpers.RunClassConstructor(typeof(XMLExtensions).TypeHandle);

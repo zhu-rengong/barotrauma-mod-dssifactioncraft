@@ -2,11 +2,12 @@
 using Barotrauma;
 using Barotrauma.Networking;
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using Barotrauma.Items.Components;
 using HarmonyLib;
 using MoonSharp.Interpreter;
 using static Barotrauma.Networking.RespawnManager;
-using System.Linq;
 
 namespace DSSIFactionCraft.Networking
 {
@@ -17,9 +18,15 @@ namespace DSSIFactionCraft.Networking
             public readonly string FactionIdentifier;
             public DateTime RespawnTime;
             public bool RespawnCountdownStarted;
-            public bool AllowRespawn => DFCModule.Factions is DynValue { Type: DataType.Table } factions
+
+            public bool AllowRespawn => DfcModule.Factions is DynValue { Type: DataType.Table } factions
+                && factions.Table.RawGet(FactionIdentifier) is DynValue { Type: DataType.Table } faction
+                && faction.Table.RawGet("allowRespawn") is DynValue { Type: DataType.Boolean, Boolean: true };
+
+            public float RespawnIntervalMultiplier => (DfcModule.Factions is DynValue { Type: DataType.Table } factions
                     && factions.Table.RawGet(FactionIdentifier) is DynValue { Type: DataType.Table } faction
-                    && faction.Table.RawGet("allowRespawn") is DynValue { Type: DataType.Boolean, Boolean: true } allowRespawn;
+                    && faction.Table.RawGet("respawnIntervalMultiplier") is DynValue { Type: DataType.Number } respawnIntervalMultiplier
+                ) ? Convert.ToSingle(respawnIntervalMultiplier.Number) : 1.0f;
 
             public FactionSpecificState(string factionIdentifier)
             {
@@ -35,7 +42,7 @@ namespace DSSIFactionCraft.Networking
         {
             if (GameMain.GameSession is { RoundDuration: < 3.0f }) { return; }
 
-            if (DFCModule.Factions is DynValue { Type: DataType.Table } factions)
+            if (DfcModule.Factions is DynValue { Type: DataType.Table } factions)
             {
                 foreach (var dynValueFactionIdentifier in factions.Table.Keys)
                 {
@@ -51,20 +58,20 @@ namespace DSSIFactionCraft.Networking
             }
 
             if (factionSpecificStates.Any()
-                && DFCModule.WaitRespawn is DynValue { Type: DataType.Table }
-                && DFCModule.JoinedFaction is DynValue { Type: DataType.Table })
+                && DfcModule.WaitRespawn is DynValue { Type: DataType.Table }
+                && DfcModule.JoinedFaction is DynValue { Type: DataType.Table })
             {
                 foreach (var factionSpecificState in factionSpecificStates.Values)
                 {
                     if (!factionSpecificState.AllowRespawn) { continue; }
 
-                    bool shouldStartCountdown = DFCModule.WaitRespawn.Table.Pairs.Any(IsClientWaitingForRespawnInFactionSpecific);
+                    bool shouldStartCountdown = DfcModule.WaitRespawn.Table.Pairs.Any(IsClientWaitingForRespawnInFactionSpecific);
 
                     bool IsClientWaitingForRespawnInFactionSpecific(TablePair waitRespawnPair)
                     {
                         return waitRespawnPair.Key is DynValue { Type: DataType.String } clientAccountId
                             && waitRespawnPair.Value is DynValue { Type: DataType.Boolean, Boolean: true } isWaiting
-                            && DFCModule.JoinedFaction.Table.RawGet(clientAccountId.String) is DynValue { Type: DataType.Table } faction
+                            && DfcModule.JoinedFaction.Table.RawGet(clientAccountId.String) is DynValue { Type: DataType.Table } faction
                             && faction.Table.RawGet("identifier") is DynValue { Type: DataType.String } dynValueFactionIdentifier
                             && dynValueFactionIdentifier.String == factionSpecificState.FactionIdentifier;
                     };
@@ -83,14 +90,18 @@ namespace DSSIFactionCraft.Networking
                             factionSpecificState.RespawnCountdownStarted = true;
                             if (factionSpecificState.RespawnTime < DateTime.Now)
                             {
-                                factionSpecificState.RespawnTime = DateTime.Now + new TimeSpan(0, 0, 0, 0, (int)(GameMain.Server.ServerSettings.RespawnInterval * 1000.0f));
+                                factionSpecificState.RespawnTime = DateTime.Now + new TimeSpan(0, 0, 0, 0, (int)(GameMain.Server.ServerSettings.RespawnInterval * 1000.0f * factionSpecificState.RespawnIntervalMultiplier));
 
                                 float timeLeft = MathF.Ceiling((float)(factionSpecificState.RespawnTime - DateTime.Now).TotalSeconds);
-                                LocalizedString respawnText = TextManager.GetWithVariables(
-                                    "dfc.respawningin",
-                                    ("[faction]", GetFactionDisplayName()),
-                                    ("[time]", ToolBox.SecondsToReadableTime(timeLeft)));
-                                GameMain.Server.SendChatMessage(respawnText.Value, ChatMessageType.Server);
+
+                                if (timeLeft > 0.0f)
+                                {
+                                    LocalizedString respawnText = TextManager.GetWithVariables(
+                                        "dfc.respawningin",
+                                        ("[faction]", GetFactionDisplayName()),
+                                        ("[time]", ToolBox.SecondsToReadableTime(timeLeft)));
+                                    GameMain.Server.SendChatMessage(respawnText.Value, ChatMessageType.Server);
+                                }
                             }
 
                         }
@@ -100,11 +111,11 @@ namespace DSSIFactionCraft.Networking
                     {
                         factionSpecificState.RespawnCountdownStarted = false;
 
-                        foreach (var waitRespawnPair in DFCModule.WaitRespawn.Table.Pairs)
+                        foreach (var waitRespawnPair in DfcModule.WaitRespawn.Table.Pairs)
                         {
                             if (IsClientWaitingForRespawnInFactionSpecific(waitRespawnPair))
                             {
-                                DFCModule.WaitRespawn.Table.Set(waitRespawnPair.Key, DynValue.Nil);
+                                DfcModule.WaitRespawn.Table.Set(waitRespawnPair.Key, DynValue.Nil);
                             }
                         }
 

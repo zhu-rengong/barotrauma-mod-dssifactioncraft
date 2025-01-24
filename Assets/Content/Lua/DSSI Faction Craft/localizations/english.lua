@@ -1,5 +1,6 @@
 return {
     [[English]],
+    Unknown = "Unknown",
     ParticipatoryStatistic = "{1} | Amount:{2}/{3} | Remaining:{4} | Percentage:{5}% ({6} {7}/{8})",
     PromptJoinFaction = "Which faction would you like to join?",
     PromptAssignJob = "Please assign your job. (Remaining life: {1})",

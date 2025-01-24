@@ -10,6 +10,7 @@
 ---@field gears { [string]:dfc.gear }
 ---@field sortedGears dfc.gear[]
 ---@field existAnyGear boolean
+---@field gearCount integer
 ---@field jobPrefab? Barotrauma.JobPrefab
 ---@field characterPrefab? Barotrauma.CharacterPrefab
 ---@field human boolean
@@ -35,6 +36,8 @@ function m:__init(identifier, name, onAssigned, liveConsumption)
     self.sort = self.sort or 0
     self.notifyTeammates = self.notifyTeammates == nil and true or self.notifyTeammates
     self.gears = {}
+    self.existAnyGear = false
+    self.gearCount = 0
     if JobPrefab.Prefabs.ContainsKey(name) then
         self.jobPrefab = JobPrefab.Prefabs[name]
     elseif CharacterPrefab.Prefabs.ContainsKey(name) then
@@ -51,6 +54,7 @@ function m:addGear(identifier)
     if gear ~= nil then
         self.gears[identifier] = gear
         self.existAnyGear = true
+        self.gearCount = moses.count(self.gears)
         self.shouldSortGears = true
     end
     return self
@@ -68,6 +72,7 @@ end
 function m:removeGear(identifier)
     self.gears[identifier] = nil
     self.existAnyGear = next(self.gears) ~= nil
+    self.gearCount = moses.count(self.gears)
     self.shouldSortGears = true
     return self
 end

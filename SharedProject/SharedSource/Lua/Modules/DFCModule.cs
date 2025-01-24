@@ -18,7 +18,7 @@ using DSSIFactionCraft.Items.Components;
 namespace DSSIFactionCraft
 {
     [MoonSharpModule(Namespace = "DFC")]
-    public partial class DFCModule
+    public partial class DfcModule
     {
         public static DynValue Factions => GameMain.LuaCs.Lua.Globals.RawGet(new object[] { "DFC", "Loaded", "factions" });
         public static DynValue JoinedFaction => GameMain.LuaCs.Lua.Globals.RawGet(new object[] { "DFC", "Loaded", "_joinedFaction" });

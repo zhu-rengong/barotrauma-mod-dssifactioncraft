@@ -5,8 +5,6 @@ local dialog = require "utilbelt.dialog"
 local itbu = require "utilbelt.itbu"
 local utils = require "utilbelt.csharpmodule.Shared.Utils"
 
-local UniversalFactionParticipateKey = '_'
-
 ---@class dfc.inner
 ---@field dfc dfc
 
@@ -17,6 +15,7 @@ local UniversalFactionParticipateKey = '_'
 ---@field factions { [string]:dfc.faction }
 ---@field sortedFactions dfc.faction[]
 ---@field existAnyFaction boolean
+---@field factionCount integer
 ---@field jobs { [string]:dfc.job }
 ---@field gears { [string]:dfc.gear }
 ---@field _firstPlayerAccountIds { [string]:boolean }
@@ -33,7 +32,8 @@ local UniversalFactionParticipateKey = '_'
 ---@field _promptedChoosingGear { [Barotrauma.Character]:boolean }
 ---@field _characterWaitChooseGearBy { [string]:Barotrauma.Character }
 ---@field allowMidRoundJoin boolean
----@field allowRespawn? boolean
+---@field allowRespawn boolean
+---@field autoParticipateWhenNoChoices boolean
 ---@overload fun():self
 local m = Class 'dfc'
 
@@ -41,10 +41,14 @@ function m:__init()
     self.itemBuilders = {}
     self.spawnPointSets = {}
     self.factions = {}
+    self.existAnyFaction = false
+    self.factionCount = 0
     self.jobs = {}
     self.gears = {}
     self:resetRoundDatas()
     self.allowMidRoundJoin = true
+    self.allowRespawn = true
+    self.autoParticipateWhenNoChoices = true
 end
 
 function m:resetRoundDatas()
@@ -115,6 +119,7 @@ function m:newFaction(identifier, teamID, maxLives, onJoined)
     local faction = New 'dfc.faction' (identifier, teamID, maxLives, onJoined)
     self.factions[identifier] = faction
     self.existAnyFaction = true
+    self.factionCount = self.factionCount + 1
     faction.dfc = self
     self.shouldSortFactions = true
     return faction
@@ -421,6 +426,8 @@ function m:initialize()
                     for _, identifier in ipairs(parameters.jobs) do faction:addJob(identifier) end
                     if parameters.sort then faction.sort = parameters.sort end
                     if parameters.notifyTeammates then faction.notifyTeammates = parameters.notifyTeammates end
+                    faction.allowRespawn = parameters.allowRespawn
+                    faction.respawnIntervalMultiplier = parameters.respawnIntervalMultiplier
                 end
             end
         end
@@ -492,53 +499,63 @@ function m:initialize()
                             if not joinedFaction then
                                 if not self._promptedJoiningFaction[clientAccountId] then
                                     self:trySortFactions()
+                                    ---@type dfc.faction[]
                                     factions = factions or moses.clone(self.sortedFactions, true)
                                     factionOptions = factionOptions or moses.mapi(
                                         factions,
                                         function(faction, index)
                                             return ("[%i] %s"):format(
                                                 index,
-                                                faction:statistic(self.factions, UniversalFactionParticipateKey, "FactionDisplayName")
+                                                faction:statistic(l10n { "FactionDisplayName", faction.identifier }.altvalue, self.factions)
                                             )
                                         end
                                     )
-                                    dialog.prompt(l10n "PromptJoinFaction".value, factionOptions, client,
-                                        function(option_index, responder)
-                                            local responderAccountId = responder.AccountId.StringRepresentation
-                                            if option_index == 255 then
-                                                self._promptedJoiningFaction[responderAccountId] = nil
-                                                return
-                                            end
-                                            local option = option_index + 1
-                                            local faction = factions[option]
-                                            if faction:participatory(self.factions, UniversalFactionParticipateKey) then
-                                                faction:addParticipator(UniversalFactionParticipateKey, responderAccountId)
-                                                faction:modifyTickets(UniversalFactionParticipateKey, -1)
-                                                self._remainingLives[responderAccountId] = faction.maxLives
-                                                self._joinedFaction[responderAccountId] = faction
 
-                                                chat.send { l10n "PrivateJoinFactionSuccess":format(
-                                                    l10n { "FactionDisplayName", faction.identifier }.altvalue
-                                                ), responder, msgtypes = ChatMessageType.Private }
+                                    ---@param option_index integer
+                                    ---@param responder Barotrauma.Networking.Client
+                                    local function chooseCallback(option_index, responder)
+                                        local responderAccountId = responder.AccountId.StringRepresentation
+                                        if option_index == 255 then
+                                            self._promptedJoiningFaction[responderAccountId] = nil
+                                            return
+                                        end
+                                        local option = option_index + 1
+                                        ---@type dfc.faction
+                                        local faction = factions[option]
+                                        if faction:participatory(self.factions) then
+                                            faction:addParticipator(responderAccountId)
+                                            faction:modifyTickets(-1)
+                                            self._remainingLives[responderAccountId] = faction.maxLives
+                                            self._joinedFaction[responderAccountId] = faction
 
-                                                local boardcastFactionMessage = l10n "BoardcastTeammateJoinFactionSuccess":format(
-                                                    utils.ClientLogName(responder),
-                                                    l10n { "FactionDisplayName", faction.identifier }.altvalue
-                                                )
-                                                Lub.Chat.boardcast {
-                                                    boardcastFactionMessage,
-                                                    msgtypes = ChatMessageType.Private,
-                                                    filter = function(client)
-                                                        return client ~= responder
-                                                    end
-                                                }
-                                            else
-                                                chat.send { l10n "PrivateJoinFactionFailure":format(
-                                                    l10n { "FactionDisplayName", faction.identifier }.altvalue
-                                                ), responder, msgtypes = ChatMessageType.Private }
-                                                self._promptedJoiningFaction[responderAccountId] = nil
-                                            end
-                                        end, nil, true)
+                                            chat.send { l10n "PrivateJoinFactionSuccess":format(
+                                                l10n { "FactionDisplayName", faction.identifier }.altvalue
+                                            ), responder, msgtypes = ChatMessageType.Private }
+
+                                            local boardcastFactionMessage = l10n "BoardcastTeammateJoinFactionSuccess":format(
+                                                utils.ClientLogName(responder),
+                                                l10n { "FactionDisplayName", faction.identifier }.altvalue
+                                            )
+                                            Lub.Chat.boardcast {
+                                                boardcastFactionMessage,
+                                                msgtypes = ChatMessageType.Private,
+                                                filter = function(client)
+                                                    return client ~= responder
+                                                end
+                                            }
+                                        else
+                                            chat.send { l10n "PrivateJoinFactionFailure":format(
+                                                l10n { "FactionDisplayName", faction.identifier }.altvalue
+                                            ), responder, msgtypes = ChatMessageType.Private }
+                                            self._promptedJoiningFaction[responderAccountId] = nil
+                                        end
+                                    end
+
+                                    if self.autoParticipateWhenNoChoices and self.factionCount == 1 then
+                                        chooseCallback(0, client)
+                                    else
+                                        dialog.prompt(l10n "PromptJoinFaction".value, factionOptions, client, chooseCallback, nil, true)
+                                    end
                                     self._promptedJoiningFaction[clientAccountId] = true
                                 end
                             elseif joinedFaction.allowRespawn
@@ -558,103 +575,110 @@ function m:initialize()
                                     function(job, index)
                                         return ("[%i] %s (%s)"):format(
                                             index,
-                                            job:statistic(joinedFaction.jobs, joinedFaction, "JobDisplayName"),
+                                            job:statistic(l10n { "JobDisplayName", job.identifier }.altvalue, joinedFaction.jobs, joinedFaction),
                                             l10n "JobLiveConsumption":format(job.liveConsumption)
                                         )
                                     end)
                                 factionJobs[joinedFaction] = jobs
                                 factionJobOptions[joinedFaction] = jobOptions
-                                dialog.prompt(l10n "PromptAssignJob":format(self._remainingLives[clientAccountId]), jobOptions, client,
-                                    function(option_index, responder)
-                                        local responderAccountId = responder.AccountId.StringRepresentation
-                                        if option_index == 255 then
-                                            self._promptedAssigningJob[responderAccountId] = nil
-                                            return
+
+                                local chooseCallback = function(option_index, responder)
+                                    local responderAccountId = responder.AccountId.StringRepresentation
+                                    if option_index == 255 then
+                                        self._promptedAssigningJob[responderAccountId] = nil
+                                        return
+                                    end
+                                    local option = option_index + 1
+                                    local job = jobs[option]
+                                    local remainingLives = self._remainingLives[responderAccountId]
+                                    if joinedFaction.allowRespawn
+                                        and joinedFaction.existAnyJob
+                                        and joinedFaction.jobs[job.identifier]
+                                        and remainingLives >= job.liveConsumption
+                                        and job:participatory(joinedFaction.jobs, joinedFaction)
+                                    then
+                                        ---@type dfc.spawnpointset
+                                        local spawnPointSet
+                                        ---@type Barotrauma.WayPoint
+                                        local spawnPoint
+                                        if job.existAnySpawnPointSet then
+                                            spawnPointSet = utils.SelectDynValueWeightedRandom(job.spawnPointSets, job.spawnPointSetWeights)
+                                            spawnPoint = spawnPointSet:getRandom()
                                         end
-                                        local option = option_index + 1
-                                        local job = jobs[option]
-                                        local remainingLives = self._remainingLives[responderAccountId]
-                                        if joinedFaction.allowRespawn
-                                            and joinedFaction.existAnyJob
-                                            and joinedFaction.jobs[job.identifier]
-                                            and remainingLives >= job.liveConsumption
-                                            and job:participatory(joinedFaction.jobs, joinedFaction)
-                                        then
-                                            ---@type dfc.spawnpointset
-                                            local spawnPointSet
-                                            ---@type Barotrauma.WayPoint
-                                            local spawnPoint
-                                            if job.existAnySpawnPointSet then
-                                                spawnPointSet = utils.SelectDynValueWeightedRandom(job.spawnPointSets, job.spawnPointSetWeights)
-                                                spawnPoint = spawnPointSet:getRandom()
-                                            end
-                                            local spawnPosition = spawnPoint and spawnPoint.WorldPosition or Submarine.MainSub.WorldPosition
+                                        local spawnPosition = spawnPoint and spawnPoint.WorldPosition or Submarine.MainSub.WorldPosition
 
-                                            ---@type Barotrauma.Character
-                                            local spawnedCharacter
-                                            if job.human then
-                                                local variant = job.jobPrefab and math.random(0, job.jobPrefab.Variants - 1) or 0
-                                                local characterInfo = CharacterInfo(CharacterPrefab.HumanSpeciesName, responder.Name, nil, job.jobPrefab, variant, RandSync.Unsynced, nil)
-                                                characterInfo.TeamID = joinedFaction.teamID
-                                                spawnedCharacter = Character.Create(characterInfo, spawnPosition, ToolBox.RandomSeed(8))
-                                            else
-                                                spawnedCharacter = Character.Create(job.characterPrefab, spawnPosition, ToolBox.RandomSeed(8))
-                                            end
-                                            if spawnedCharacter.Info then spawnedCharacter.Info.Name = responder.Name end
-
-                                            joinedFaction:addCharacterTagsFor(spawnedCharacter)
-                                            job:addCharacterTagsFor(spawnedCharacter)
-                                            if spawnPointSet then
-                                                spawnPointSet:addCharacterTagsFor(spawnedCharacter)
-                                            end
-
-                                            spawnedCharacter.GiveJobItems(false, spawnPoint)
-                                            spawnedCharacter.GiveIdCardTags(spawnPoint, true)
-                                            responder.SetClientCharacter(spawnedCharacter)
-                                            -- spawnedCharacter.SetOwnerClient(responder)
-                                            responder.TeamID = spawnedCharacter.TeamID
-                                            if joinedFaction.onJoined then joinedFaction.onJoined(spawnedCharacter) end
-                                            if job.onAssigned then job.onAssigned(spawnedCharacter) end
-
-                                            job:addParticipator(joinedFaction, spawnedCharacter)
-                                            job:modifyTickets(joinedFaction, -1)
-                                            self._remainingLives[responderAccountId] = remainingLives - job.liveConsumption
-                                            self._assignedJob[responderAccountId] = job
-                                            self._characterWaitChooseGearBy[responderAccountId] = spawnedCharacter
-                                            self._characterFaction[spawnedCharacter] = joinedFaction
-                                            self._characterJob[spawnedCharacter] = job
-
-                                            chat.send { l10n "PrivateAssignJobSuccess":format(
-                                                ("[%i] %s"):format(
-                                                    option,
-                                                    l10n { "JobDisplayName", job.identifier }.altvalue
-                                                )
-                                            ), responder, msgtypes = ChatMessageType.Private }
-
-                                            local accountIds = moses.clone(joinedFaction:tryGetParticipatorsByKeyEvenIfNil(UniversalFactionParticipateKey))
-                                            moses.remove(accountIds, responderAccountId)
-                                            local recipients = DFC.GetClientListByAccountIds(accountIds)
-                                            local boardcastJobMessage = l10n "BoardcastTeammateAssignJobSuccess":format(
-                                                utils.ClientLogName(responder),
-                                                ("[%i] %s"):format(
-                                                    option,
-                                                    l10n { "JobDisplayName", job.identifier }.altvalue
-                                                )
-                                            )
-                                            Lub.Chat.boardcast {
-                                                boardcastJobMessage,
-                                                msgtypes = ChatMessageType.Private,
-                                                filter = function(client)
-                                                    return moses.include(recipients, client) or client.SpectateOnly
-                                                end
-                                            }
+                                        ---@type Barotrauma.Character
+                                        local spawnedCharacter
+                                        if job.human then
+                                            local variant = job.jobPrefab and math.random(0, job.jobPrefab.Variants - 1) or 0
+                                            local characterInfo = CharacterInfo(CharacterPrefab.HumanSpeciesName, responder.Name, nil, job.jobPrefab, variant, RandSync.Unsynced, nil)
+                                            characterInfo.TeamID = joinedFaction.teamID
+                                            spawnedCharacter = Character.Create(characterInfo, spawnPosition, ToolBox.RandomSeed(8))
                                         else
-                                            chat.send { l10n "PrivateAssignJobFailure":format(
-                                                l10n { "JobDisplayName", job.identifier }.altvalue
-                                            ), responder, msgtypes = ChatMessageType.Private }
-                                            self._promptedAssigningJob[responderAccountId] = nil
+                                            spawnedCharacter = Character.Create(job.characterPrefab, spawnPosition, ToolBox.RandomSeed(8))
                                         end
-                                    end, nil, true)
+                                        if spawnedCharacter.Info then spawnedCharacter.Info.Name = responder.Name end
+
+                                        joinedFaction:addCharacterTagsFor(spawnedCharacter)
+                                        job:addCharacterTagsFor(spawnedCharacter)
+                                        if spawnPointSet then
+                                            spawnPointSet:addCharacterTagsFor(spawnedCharacter)
+                                        end
+
+                                        spawnedCharacter.GiveJobItems(false, spawnPoint)
+                                        spawnedCharacter.GiveIdCardTags(spawnPoint, true)
+                                        responder.SetClientCharacter(spawnedCharacter)
+                                        -- spawnedCharacter.SetOwnerClient(responder)
+                                        responder.TeamID = spawnedCharacter.TeamID
+                                        if joinedFaction.onJoined then joinedFaction.onJoined(spawnedCharacter) end
+                                        if job.onAssigned then job.onAssigned(spawnedCharacter) end
+
+                                        job:addParticipator(spawnedCharacter, joinedFaction)
+                                        job:modifyTickets(-1, joinedFaction)
+                                        self._remainingLives[responderAccountId] = remainingLives - job.liveConsumption
+                                        self._assignedJob[responderAccountId] = job
+                                        self._characterWaitChooseGearBy[responderAccountId] = spawnedCharacter
+                                        self._characterFaction[spawnedCharacter] = joinedFaction
+                                        self._characterJob[spawnedCharacter] = job
+
+                                        chat.send { l10n "PrivateAssignJobSuccess":format(
+                                            ("[%i] %s"):format(
+                                                option,
+                                                l10n { "JobDisplayName", job.identifier }.altvalue
+                                            )
+                                        ), responder, msgtypes = ChatMessageType.Private }
+
+                                        local accountIds = moses.clone(joinedFaction:tryGetParticipatorsByKeyEvenIfNil())
+                                        moses.remove(accountIds, responderAccountId)
+                                        local recipients = DFC.GetClientListByAccountIds(accountIds)
+                                        local boardcastJobMessage = l10n "BoardcastTeammateAssignJobSuccess":format(
+                                            utils.ClientLogName(responder),
+                                            ("[%i] %s"):format(
+                                                option,
+                                                l10n { "JobDisplayName", job.identifier }.altvalue
+                                            )
+                                        )
+                                        Lub.Chat.boardcast {
+                                            boardcastJobMessage,
+                                            msgtypes = ChatMessageType.Private,
+                                            filter = function(client)
+                                                return moses.include(recipients, client) or client.SpectateOnly
+                                            end
+                                        }
+                                    else
+                                        chat.send { l10n "PrivateAssignJobFailure":format(
+                                            l10n { "JobDisplayName", job.identifier }.altvalue
+                                        ), responder, msgtypes = ChatMessageType.Private }
+                                        self._promptedAssigningJob[responderAccountId] = nil
+                                    end
+                                end
+
+                                if self.autoParticipateWhenNoChoices and joinedFaction.jobCount == 1 then
+                                    chooseCallback(0, client)
+                                else
+                                    dialog.prompt(l10n "PromptAssignJob":format(self._remainingLives[clientAccountId]), jobOptions, client, chooseCallback, nil, true)
+                                end
+
                                 self._promptedAssigningJob[clientAccountId] = true
                             end
                         elseif self._characterWaitChooseGearBy[clientAccountId] == clientCharacter then
@@ -672,62 +696,69 @@ function m:initialize()
                                     function(gear, index)
                                         return ("[%i] %s"):format(
                                             index,
-                                            gear:statistic(job.gears, faction, "GearDisplayName")
+                                            gear:statistic(l10n { "GearDisplayName", gear.identifier }.altvalue, job.gears, faction)
                                         )
                                     end
                                 )
                                 jobGears[job] = gears
                                 jobGearOptions[job] = gearOptions
-                                dialog.prompt(l10n "PromptChooseGear".value, gearOptions, client,
-                                    function(option_index, responder)
-                                        local responderAccountId = responder.AccountId.StringRepresentation
-                                        if option_index == 255 then
-                                            self._promptedChoosingGear[clientCharacter] = nil
-                                            return
-                                        end
-                                        local option = option_index + 1
-                                        local gear = gears[option]
-                                        if job.existAnyGear
-                                            and job.gears[gear.identifier]
-                                            and gear:participatory(job.gears, faction)
-                                        then
-                                            gear:addCharacterTagsFor(clientCharacter)
-                                            if gear.action then gear.action(clientCharacter) end
 
-                                            gear:addParticipator(faction, clientCharacter)
-                                            gear:modifyTickets(faction, -1)
-                                            self._chosenGear[clientCharacter] = gear
+                                local chooseCallback = function(option_index, responder)
+                                    local responderAccountId = responder.AccountId.StringRepresentation
+                                    if option_index == 255 then
+                                        self._promptedChoosingGear[clientCharacter] = nil
+                                        return
+                                    end
+                                    local option = option_index + 1
+                                    local gear = gears[option]
+                                    if job.existAnyGear
+                                        and job.gears[gear.identifier]
+                                        and gear:participatory(job.gears, faction)
+                                    then
+                                        gear:addCharacterTagsFor(clientCharacter)
+                                        if gear.action then gear.action(clientCharacter) end
 
-                                            chat.send { l10n "PrivateChooseGearSuccess":format(
-                                                ("[%i] %s"):format(
-                                                    option,
-                                                    l10n { "GearDisplayName", gear.identifier }.altvalue
-                                                )
-                                            ), responder, msgtypes = ChatMessageType.Private }
-                                            local accountIds = moses.clone(faction:tryGetParticipatorsByKeyEvenIfNil(UniversalFactionParticipateKey))
-                                            moses.remove(accountIds, responderAccountId)
-                                            local recipients = DFC.GetClientListByAccountIds(accountIds)
-                                            local boardcastGearMessage = l10n "BoardcastTeammateChooseGearSuccess":format(
-                                                utils.ClientLogName(responder),
-                                                ("[%i] %s"):format(
-                                                    option,
-                                                    l10n { "GearDisplayName", gear.identifier }.altvalue
-                                                )
-                                            )
-                                            Lub.Chat.boardcast {
-                                                boardcastGearMessage,
-                                                msgtypes = ChatMessageType.Private,
-                                                filter = function(client)
-                                                    return moses.include(recipients, client) or client.SpectateOnly
-                                                end
-                                            }
-                                        else
-                                            chat.send { l10n "PrivateChooseGearFailure":format(
+                                        gear:addParticipator(clientCharacter, faction)
+                                        gear:modifyTickets(-1, faction)
+                                        self._chosenGear[clientCharacter] = gear
+
+                                        chat.send { l10n "PrivateChooseGearSuccess":format(
+                                            ("[%i] %s"):format(
+                                                option,
                                                 l10n { "GearDisplayName", gear.identifier }.altvalue
-                                            ), responder, msgtypes = ChatMessageType.Private }
-                                            self._promptedChoosingGear[clientCharacter] = nil
-                                        end
-                                    end, nil, false)
+                                            )
+                                        ), responder, msgtypes = ChatMessageType.Private }
+                                        local accountIds = moses.clone(faction:tryGetParticipatorsByKeyEvenIfNil())
+                                        moses.remove(accountIds, responderAccountId)
+                                        local recipients = DFC.GetClientListByAccountIds(accountIds)
+                                        local boardcastGearMessage = l10n "BoardcastTeammateChooseGearSuccess":format(
+                                            utils.ClientLogName(responder),
+                                            ("[%i] %s"):format(
+                                                option,
+                                                l10n { "GearDisplayName", gear.identifier }.altvalue
+                                            )
+                                        )
+                                        Lub.Chat.boardcast {
+                                            boardcastGearMessage,
+                                            msgtypes = ChatMessageType.Private,
+                                            filter = function(client)
+                                                return moses.include(recipients, client) or client.SpectateOnly
+                                            end
+                                        }
+                                    else
+                                        chat.send { l10n "PrivateChooseGearFailure":format(
+                                            l10n { "GearDisplayName", gear.identifier }.altvalue
+                                        ), responder, msgtypes = ChatMessageType.Private }
+                                        self._promptedChoosingGear[clientCharacter] = nil
+                                    end
+                                end
+
+                                if self.autoParticipateWhenNoChoices and job.gearCount == 1 then
+                                    chooseCallback(0, client)
+                                else
+                                    dialog.prompt(l10n "PromptChooseGear".value, gearOptions, client, chooseCallback, nil, false)
+                                end
+
                                 self._promptedChoosingGear[clientCharacter] = true
                             end
                         end

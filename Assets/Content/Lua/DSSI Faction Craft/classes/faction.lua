@@ -10,7 +10,9 @@
 ---@field jobs { [string]:dfc.job }
 ---@field sortedJobs dfc.job[]
 ---@field existAnyJob boolean
+---@field jobCount integer
 ---@field allowRespawn boolean
+---@field respawnIntervalMultiplier number
 ---@overload fun(identifier: string, teamID: Barotrauma.CharacterTeamType, maxLives?: integer, onJoined?: fun(character: Barotrauma.Character)):self
 local m = Class 'dfc.faction'
 
@@ -31,7 +33,10 @@ function m:__init(identifier, teamID, maxLives, onJoined)
     self.sort = self.sort or 0
     self.notifyTeammates = self.notifyTeammates == nil and true or self.notifyTeammates
     self.jobs = {}
+    self.existAnyJob = false
+    self.jobCount = 0
     self.allowRespawn = true
+    self.respawnIntervalMultiplier = 1.0
 end
 
 ---@param identifier string
@@ -40,6 +45,7 @@ function m:addJob(identifier)
     if job ~= nil then
         self.jobs[identifier] = job
         self.existAnyJob = true
+        self.jobCount = moses.count(self.jobs)
         self.shouldSortJobs = true
     end
     return self
@@ -57,6 +63,7 @@ end
 function m:removeJob(identifier)
     self.jobs[identifier] = nil
     self.existAnyJob = next(self.jobs) ~= nil
+    self.jobCount = moses.count(self.jobs)
     self.shouldSortJobs = true
     return self
 end

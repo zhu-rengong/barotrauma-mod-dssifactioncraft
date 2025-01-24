@@ -12,6 +12,9 @@ namespace DSSIFactionCraft.Items.Components
 
         [InGameEditable, Serialize(true, IsPropertySaveable.Yes, alwaysUseInstanceValues: true, translationTextTag: "sp.")]
         public bool AllowRespawn { get; set; }
+        
+        [InGameEditable, Serialize(true, IsPropertySaveable.Yes, alwaysUseInstanceValues: true, translationTextTag: "sp.")]
+        public bool AutoParticipateWhenNoChoices { get; set; }
 
         public DfcInitializer(Item item, ContentXElement element) : base(item, element) { }
     }

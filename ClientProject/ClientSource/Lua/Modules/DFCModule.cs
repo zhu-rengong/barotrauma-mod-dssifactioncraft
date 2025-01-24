@@ -16,7 +16,7 @@ using static MoonSharp.Interpreter.CoreLib.DynamicModule;
 
 namespace DSSIFactionCraft
 {
-    public partial class DFCModule
+    public partial class DfcModule
     {
         public static partial void MoonSharpInitProjSpecific(Table globalTable, Table dfcTable)
         {
