@@ -25,6 +25,9 @@ namespace DSSIFactionCraft.Items.Components
 
         [InGameEditable, Serialize("", IsPropertySaveable.Yes, alwaysUseInstanceValues: true, translationTextTag: "sp.")]
         public string CharacterTags { get; set; }
+        
+        [InGameEditable, Serialize(true, IsPropertySaveable.Yes, alwaysUseInstanceValues: true, translationTextTag: "sp.")]
+        public bool DespawnRatherThanRemoveDirectly { get; set; }
 
         private Dictionary<Character, int> Tolerance;
 
@@ -64,7 +67,14 @@ namespace DSSIFactionCraft.Items.Components
                 if (++tolerance >= ToleranceThreshold)
                 {
                     Tolerance.Remove(character);
-                    Entity.Spawner.AddEntityToRemoveQueue(character);
+                    if (DespawnRatherThanRemoveDirectly)
+                    {
+                        character.Despawn();
+                    }
+                    else
+                    {
+                        Entity.Spawner.AddEntityToRemoveQueue(character);
+                    }
                     continue;
                 }
                 else

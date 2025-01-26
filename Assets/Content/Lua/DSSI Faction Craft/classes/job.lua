@@ -7,6 +7,7 @@
 ---@field sort integer
 ---@field shouldSortGears boolean
 ---@field notifyTeammates boolean
+---@field inhertCharacterInfo boolean
 ---@field gears { [string]:dfc.gear }
 ---@field sortedGears dfc.gear[]
 ---@field existAnyGear boolean
@@ -35,6 +36,7 @@ function m:__init(identifier, name, onAssigned, liveConsumption)
     self.liveConsumption = liveConsumption or 1
     self.sort = self.sort or 0
     self.notifyTeammates = self.notifyTeammates == nil and true or self.notifyTeammates
+    self.inhertCharacterInfo = self.inhertCharacterInfo == nil and false or self.inhertCharacterInfo
     self.gears = {}
     self.existAnyGear = false
     self.gearCount = 0

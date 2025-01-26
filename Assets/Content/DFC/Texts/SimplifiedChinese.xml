@@ -89,6 +89,7 @@
   <sp.dfccharactercleaner.characterspeciesnames.description>角色种名</sp.dfccharactercleaner.characterspeciesnames.description>
   <sp.dfccharactercleaner.charactergroup.description>角色组别</sp.dfccharactercleaner.charactergroup.description>
   <sp.dfccharactercleaner.charactertags.description>角色标记</sp.dfccharactercleaner.charactertags.description>
+  <sp.dfccharactercleaner.despawnratherthanremovedirectly.description>使用反生成替代(将生成遗物袋)，而非直接清除角色。</sp.dfccharactercleaner.despawnratherthanremovedirectly.description>
   <sp.dfcitemcleaner.weakcleanpatternincludes.description>弱清理包含</sp.dfcitemcleaner.weakcleanpatternincludes.description>
   <sp.dfcitemcleaner.weakcleanpatternexcludes.description>弱清理不包含</sp.dfcitemcleaner.weakcleanpatternexcludes.description>
   <sp.dfcitemcleaner.strongcleanpatternincludes.description>强清理包含</sp.dfcitemcleaner.strongcleanpatternincludes.description>

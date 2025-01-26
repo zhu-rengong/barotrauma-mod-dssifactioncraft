@@ -43,6 +43,9 @@ namespace DSSIFactionCraft.Items.Components
         [InGameEditable, Serialize(true, IsPropertySaveable.Yes, alwaysUseInstanceValues: true, translationTextTag: "sp.")]
         public bool NotifyTeammates { get; set; }
 
+        [InGameEditable, Serialize(false, IsPropertySaveable.Yes, alwaysUseInstanceValues: true, translationTextTag: "sp.")]
+        public bool InhertCharacterInfo { get; set; }
+
         public static DynValue GetParameterTable(Item item)
         {
             var component = item.GetComponent<DfcNewJob>();
@@ -60,6 +63,7 @@ namespace DSSIFactionCraft.Items.Components
             dynValue.Table["characterTags"] = LuaUtils.SplitToTable(component.CharacterTags, ',', StringSplitOptions.RemoveEmptyEntries);
             dynValue.Table["sort"] = component.Sort;
             dynValue.Table["notifyTeammates"] = component.NotifyTeammates;
+            dynValue.Table["inhertCharacterInfo"] = component.InhertCharacterInfo;
             return dynValue;
         }
 

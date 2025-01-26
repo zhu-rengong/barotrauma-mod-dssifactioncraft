@@ -31,6 +31,7 @@ local utils = require "utilbelt.csharpmodule.Shared.Utils"
 ---@field _chosenGear { [Barotrauma.Character]:dfc.gear }
 ---@field _promptedChoosingGear { [Barotrauma.Character]:boolean }
 ---@field _characterWaitChooseGearBy { [string]:Barotrauma.Character }
+---@field _clientCharacterInfosRegistry { [string]: { [dfc.faction]: { [dfc.job]: Barotrauma.CharacterInfo } } }
 ---@field allowMidRoundJoin boolean
 ---@field allowRespawn boolean
 ---@field autoParticipateWhenNoChoices boolean
@@ -65,6 +66,7 @@ function m:resetRoundDatas()
     self._chosenGear = {}
     self._promptedChoosingGear = {}
     self._characterWaitChooseGearBy = {}
+    self._clientCharacterInfosRegistry = {}
 end
 
 ---@param path string
@@ -399,6 +401,7 @@ function m:initialize()
                     for _, identifier in ipairs(parameters.spawnPointSets) do job:addSpawnPointSet(identifier) end
                     if parameters.sort then job.sort = parameters.sort end
                     if parameters.notifyTeammates then job.notifyTeammates = parameters.notifyTeammates end
+                    if parameters.inhertCharacterInfo then job.inhertCharacterInfo = parameters.inhertCharacterInfo end
                 end
             end
         end
@@ -582,7 +585,10 @@ function m:initialize()
                                 factionJobs[joinedFaction] = jobs
                                 factionJobOptions[joinedFaction] = jobOptions
 
+                                ---@param option_index integer
+                                ---@param responder Barotrauma.Networking.Client
                                 local chooseCallback = function(option_index, responder)
+                                    ---@type string
                                     local responderAccountId = responder.AccountId.StringRepresentation
                                     if option_index == 255 then
                                         self._promptedAssigningJob[responderAccountId] = nil
@@ -610,10 +616,38 @@ function m:initialize()
                                         ---@type Barotrauma.Character
                                         local spawnedCharacter
                                         if job.human then
-                                            local variant = job.jobPrefab and math.random(0, job.jobPrefab.Variants - 1) or 0
-                                            local characterInfo = CharacterInfo(CharacterPrefab.HumanSpeciesName, responder.Name, nil, job.jobPrefab, variant, RandSync.Unsynced, nil)
-                                            characterInfo.TeamID = joinedFaction.teamID
-                                            spawnedCharacter = Character.Create(characterInfo, spawnPosition, ToolBox.RandomSeed(8))
+                                            local characterInfosRegistry
+                                            if job.inhertCharacterInfo then
+                                                characterInfosRegistry = self._clientCharacterInfosRegistry[responderAccountId]
+                                                if characterInfosRegistry then
+                                                    local jobMapCharacterInfo = characterInfosRegistry[joinedFaction]
+                                                    if jobMapCharacterInfo then
+                                                        local characterInfo = jobMapCharacterInfo[job]
+                                                        if characterInfo then
+                                                            spawnedCharacter = Character.Create(characterInfo, spawnPosition, ToolBox.RandomSeed(8))
+                                                            spawnedCharacter.LoadTalents()
+                                                        end
+                                                    end
+                                                else
+                                                    characterInfosRegistry = {}
+                                                    self._clientCharacterInfosRegistry[responderAccountId] = characterInfosRegistry
+                                                end
+                                            end
+                                            if spawnedCharacter == nil then
+                                                local variant = job.jobPrefab and math.random(0, job.jobPrefab.Variants - 1) or 0
+                                                local characterInfo = CharacterInfo(CharacterPrefab.HumanSpeciesName, responder.Name, nil, job.jobPrefab, variant, RandSync.Unsynced, nil)
+                                                characterInfo.TeamID = joinedFaction.teamID
+                                                spawnedCharacter = Character.Create(characterInfo, spawnPosition, ToolBox.RandomSeed(8))
+
+                                                if job.inhertCharacterInfo then
+                                                    local jobMapCharacterInfo = characterInfosRegistry[joinedFaction]
+                                                    if jobMapCharacterInfo == nil then
+                                                        jobMapCharacterInfo = {}
+                                                        characterInfosRegistry[joinedFaction] = jobMapCharacterInfo
+                                                    end
+                                                    jobMapCharacterInfo[job] = characterInfo
+                                                end
+                                            end
                                         else
                                             spawnedCharacter = Character.Create(job.characterPrefab, spawnPosition, ToolBox.RandomSeed(8))
                                         end
@@ -785,6 +819,12 @@ function m:initialize()
                                     self._assignedJob[clientAccountId] = nil
                                     self._promptedAssigningJob[clientAccountId] = nil
                                     self._waitRespawn[clientAccountId] = true
+                                    local client = DFC.GetClientByAccountId(clientAccountId)
+                                    if client then
+                                        if client.Character == dead then
+                                            client.SetClientCharacter(nil)
+                                        end
+                                    end
                                 end
                             end
                         end
