@@ -31,7 +31,7 @@ local utils = require "utilbelt.csharpmodule.Shared.Utils"
 ---@field _chosenGear { [Barotrauma.Character]:dfc.gear }
 ---@field _promptedChoosingGear { [Barotrauma.Character]:boolean }
 ---@field _characterWaitChooseGearBy { [string]:Barotrauma.Character }
----@field _clientCharacterInfosRegistry { [string]: { [dfc.faction]: { [dfc.job]: Barotrauma.CharacterInfo } } }
+---@field _clientCharacterInfoRegistries { [string]: { [dfc.faction]: { [dfc.job]: Barotrauma.CharacterInfo } } }
 ---@field allowMidRoundJoin boolean
 ---@field allowRespawn boolean
 ---@field autoParticipateWhenNoChoices boolean
@@ -66,7 +66,7 @@ function m:resetRoundDatas()
     self._chosenGear = {}
     self._promptedChoosingGear = {}
     self._characterWaitChooseGearBy = {}
-    self._clientCharacterInfosRegistry = {}
+    self._clientCharacterInfoRegistries = {}
 end
 
 ---@param path string
@@ -618,19 +618,24 @@ function m:initialize()
                                         if job.human then
                                             local characterInfosRegistry
                                             if job.inhertCharacterInfo then
-                                                characterInfosRegistry = self._clientCharacterInfosRegistry[responderAccountId]
+                                                characterInfosRegistry = self._clientCharacterInfoRegistries[responderAccountId]
                                                 if characterInfosRegistry then
                                                     local jobMapCharacterInfo = characterInfosRegistry[joinedFaction]
                                                     if jobMapCharacterInfo then
                                                         local characterInfo = jobMapCharacterInfo[job]
                                                         if characterInfo then
+                                                            for _, character in ipairs(Character.CharacterList) do
+                                                                if character.Info == characterInfo then
+                                                                    character.Info = nil
+                                                                end
+                                                            end
                                                             spawnedCharacter = Character.Create(characterInfo, spawnPosition, ToolBox.RandomSeed(8))
                                                             spawnedCharacter.LoadTalents()
                                                         end
                                                     end
                                                 else
                                                     characterInfosRegistry = {}
-                                                    self._clientCharacterInfosRegistry[responderAccountId] = characterInfosRegistry
+                                                    self._clientCharacterInfoRegistries[responderAccountId] = characterInfosRegistry
                                                 end
                                             end
                                             if spawnedCharacter == nil then
