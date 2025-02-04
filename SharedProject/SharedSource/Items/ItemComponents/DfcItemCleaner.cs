@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Barotrauma;
+using Barotrauma.Extensions;
 using Barotrauma.Items.Components;
 
 namespace DSSIFactionCraft.Items.Components
@@ -112,6 +113,12 @@ namespace DSSIFactionCraft.Items.Components
             Tolerance = new();
             weakCleanOption = new();
             strongCleanOption = new();
+        }
+
+        public override void OnItemLoaded()
+        {
+            base.OnItemLoaded();
+            if (IsMultiplayerClient) { return; }
             UpdateCleanOptions();
         }
 
@@ -159,6 +166,7 @@ namespace DSSIFactionCraft.Items.Components
                 if (++tolerance >= ToleranceThreshold)
                 {
                     Tolerance.Remove(item);
+                    item.DroppedStack.ForEachMod(stacked => Entity.Spawner.AddItemToRemoveQueue(stacked));
                     Entity.Spawner.AddItemToRemoveQueue(item);
                     continue;
                 }

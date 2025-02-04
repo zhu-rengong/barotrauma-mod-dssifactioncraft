@@ -5,6 +5,7 @@ using Barotrauma;
 using Barotrauma.Extensions;
 using Barotrauma.Items.Components;
 using MoonSharp.Interpreter;
+using static DSSIFactionCraft.Items.Components.DfcItemCleaner;
 
 namespace DSSIFactionCraft
 {
