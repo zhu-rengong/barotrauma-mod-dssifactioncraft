@@ -32,6 +32,7 @@ local utils = require "utilbelt.csharpmodule.Shared.Utils"
 ---@field _promptedChoosingGear { [Barotrauma.Character]:boolean }
 ---@field _characterWaitChooseGearBy { [string]:Barotrauma.Character }
 ---@field _clientCharacterInfoRegistries { [string]: { [dfc.faction]: { [dfc.job]: Barotrauma.CharacterInfo } } }
+---@field _clientUnchangeableJobs { [string]: { [dfc.faction]: dfc.job } }
 ---@field allowMidRoundJoin boolean
 ---@field allowRespawn boolean
 ---@field autoParticipateWhenNoChoices boolean
@@ -67,6 +68,7 @@ function m:resetRoundDatas()
     self._promptedChoosingGear = {}
     self._characterWaitChooseGearBy = {}
     self._clientCharacterInfoRegistries = {}
+    self._clientUnchangeableJobs = {}
 end
 
 ---@param path string
@@ -402,6 +404,7 @@ function m:initialize()
                     if parameters.sort then job.sort = parameters.sort end
                     if parameters.notifyTeammates then job.notifyTeammates = parameters.notifyTeammates end
                     if parameters.inhertCharacterInfo then job.inhertCharacterInfo = parameters.inhertCharacterInfo end
+                    if parameters.disallowChangeJob then job.disallowChangeJob = parameters.disallowChangeJob end
                 end
             end
         end
@@ -565,25 +568,28 @@ function m:initialize()
                                 and joinedFaction.existAnyJob
                                 and not self._assignedJob[clientAccountId]
                                 and not self._waitRespawn[clientAccountId]
-                                and not self._promptedAssigningJob[clientAccountId]
                                 and self._remainingLives[clientAccountId] > 0
-                                and moses.include(joinedFaction.jobs, function(job)
-                                    return job.liveConsumption <= self._remainingLives[clientAccountId]
-                                end) then
-                                joinedFaction:trySortJobs()
+                            then
                                 ---@type dfc.job[]
-                                local jobs = factionJobs[joinedFaction] or moses.clone(joinedFaction.sortedJobs, true)
-                                local jobOptions = factionJobOptions[joinedFaction] or moses.mapi(
-                                    jobs,
-                                    function(job, index)
-                                        return ("[%i] %s (%s)"):format(
-                                            index,
-                                            job:statistic(l10n { "JobDisplayName", job.identifier }.altvalue, joinedFaction.jobs, joinedFaction),
-                                            l10n "JobLiveConsumption":format(job.liveConsumption)
-                                        )
-                                    end)
-                                factionJobs[joinedFaction] = jobs
-                                factionJobOptions[joinedFaction] = jobOptions
+                                local jobs
+                                ---@type string[]
+                                local jobOptions
+
+                                local function pretaskJobAssign()
+                                    joinedFaction:trySortJobs()
+                                    jobs = factionJobs[joinedFaction] or moses.clone(joinedFaction.sortedJobs, true)
+                                    jobOptions = factionJobOptions[joinedFaction] or moses.mapi(
+                                        jobs,
+                                        function(job, index)
+                                            return ("[%i] %s (%s)"):format(
+                                                index,
+                                                job:statistic(l10n { "JobDisplayName", job.identifier }.altvalue, joinedFaction.jobs, joinedFaction),
+                                                l10n "JobLiveConsumption":format(job.liveConsumption)
+                                            )
+                                        end)
+                                    factionJobs[joinedFaction] = jobs
+                                    factionJobOptions[joinedFaction] = jobOptions
+                                end
 
                                 ---@param option_index integer
                                 ---@param responder Barotrauma.Networking.Client
@@ -680,6 +686,15 @@ function m:initialize()
                                         self._characterFaction[spawnedCharacter] = joinedFaction
                                         self._characterJob[spawnedCharacter] = job
 
+                                        if job.disallowChangeJob then
+                                            local unchangeableJobs = self._clientUnchangeableJobs[responderAccountId]
+                                            if unchangeableJobs == nil then
+                                                unchangeableJobs = {}
+                                                self._clientUnchangeableJobs[responderAccountId] = unchangeableJobs
+                                            end
+                                            unchangeableJobs[joinedFaction] = job
+                                        end
+
                                         chat.send { l10n "PrivateAssignJobSuccess":format(
                                             ("[%i] %s"):format(
                                                 option,
@@ -712,35 +727,68 @@ function m:initialize()
                                     end
                                 end
 
-                                if self.autoParticipateWhenNoChoices and joinedFaction.jobCount == 1 then
-                                    chooseCallback(0, client)
-                                else
-                                    dialog.prompt(l10n "PromptAssignJob":format(self._remainingLives[clientAccountId]), jobOptions, client, chooseCallback, nil, true)
+                                local unchangeableJobs = self._clientUnchangeableJobs[clientAccountId]
+                                if unchangeableJobs then
+                                    local job = unchangeableJobs[joinedFaction]
+                                    if job then
+                                        if self._remainingLives[clientAccountId] >= job.liveConsumption then
+                                            pretaskJobAssign()
+                                            for i = 1, #jobs do
+                                                if jobs[i] == job then
+                                                    chooseCallback(i - 1, client)
+                                                    break
+                                                end
+                                            end
+                                        end
+                                        return
+                                    end
                                 end
 
-                                self._promptedAssigningJob[clientAccountId] = true
+                                if joinedFaction.jobCount == 1 and self.autoParticipateWhenNoChoices then
+                                    pretaskJobAssign()
+                                    if self._remainingLives[clientAccountId] >= jobs[1].liveConsumption then
+                                        chooseCallback(0, client)
+                                    end
+                                elseif not self._promptedAssigningJob[clientAccountId]
+                                    and moses.include(joinedFaction.jobs, function(job)
+                                        return self._remainingLives[clientAccountId] >= job.liveConsumption
+                                    end)
+                                then
+                                    pretaskJobAssign()
+                                    dialog.prompt(l10n "PromptAssignJob":format(self._remainingLives[clientAccountId]), jobOptions, client, chooseCallback, nil, true)
+                                    self._promptedAssigningJob[clientAccountId] = true
+                                end
                             end
                         elseif self._characterWaitChooseGearBy[clientAccountId] == clientCharacter then
                             local job = self._characterJob[clientCharacter]
                             if job and job.existAnyGear
                                 and not self._chosenGear[clientCharacter]
-                                and not self._promptedChoosingGear[clientCharacter]
                             then
-                                local faction = self._characterFaction[clientCharacter]
-                                job:trySortGears()
                                 ---@type dfc.gear[]
-                                local gears = jobGears[job] or moses.clone(job.sortedGears, true)
-                                local gearOptions = jobGearOptions[job] or moses.mapi(
-                                    gears,
-                                    function(gear, index)
-                                        return ("[%i] %s"):format(
-                                            index,
-                                            gear:statistic(l10n { "GearDisplayName", gear.identifier }.altvalue, job.gears, faction)
-                                        )
-                                    end
-                                )
-                                jobGears[job] = gears
-                                jobGearOptions[job] = gearOptions
+                                local gears
+                                ---@type string[]
+                                local gearOptions
+                                ---@type dfc.gear
+                                local faction
+
+                                local function pretaskChooseGear()
+                                    faction = self._characterFaction[clientCharacter]
+
+                                    job:trySortGears()
+
+                                    gears = jobGears[job] or moses.clone(job.sortedGears, true)
+                                    gearOptions = jobGearOptions[job] or moses.mapi(
+                                        gears,
+                                        function(gear, index)
+                                            return ("[%i] %s"):format(
+                                                index,
+                                                gear:statistic(l10n { "GearDisplayName", gear.identifier }.altvalue, job.gears, faction)
+                                            )
+                                        end
+                                    )
+                                    jobGears[job] = gears
+                                    jobGearOptions[job] = gearOptions
+                                end
 
                                 local chooseCallback = function(option_index, responder)
                                     local responderAccountId = responder.AccountId.StringRepresentation
@@ -792,13 +840,14 @@ function m:initialize()
                                     end
                                 end
 
-                                if self.autoParticipateWhenNoChoices and job.gearCount == 1 then
+                                if job.gearCount == 1 and self.autoParticipateWhenNoChoices then
+                                    pretaskChooseGear()
                                     chooseCallback(0, client)
-                                else
+                                elseif not self._promptedChoosingGear[clientCharacter] then
+                                    pretaskChooseGear()
                                     dialog.prompt(l10n "PromptChooseGear".value, gearOptions, client, chooseCallback, nil, false)
+                                    self._promptedChoosingGear[clientCharacter] = true
                                 end
-
-                                self._promptedChoosingGear[clientCharacter] = true
                             end
                         end
                     end

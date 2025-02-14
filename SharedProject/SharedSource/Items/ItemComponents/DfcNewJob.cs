@@ -45,6 +45,9 @@ namespace DSSIFactionCraft.Items.Components
 
         [InGameEditable, Serialize(false, IsPropertySaveable.Yes, alwaysUseInstanceValues: true, translationTextTag: "sp.")]
         public bool InhertCharacterInfo { get; set; }
+        
+        [InGameEditable, Serialize(false, IsPropertySaveable.Yes, alwaysUseInstanceValues: true, translationTextTag: "sp.")]
+        public bool DisallowChangeJob { get; set; }
 
         public static DynValue GetParameterTable(Item item)
         {
@@ -64,6 +67,7 @@ namespace DSSIFactionCraft.Items.Components
             dynValue.Table["sort"] = component.Sort;
             dynValue.Table["notifyTeammates"] = component.NotifyTeammates;
             dynValue.Table["inhertCharacterInfo"] = component.InhertCharacterInfo;
+            dynValue.Table["disallowChangeJob"] = component.DisallowChangeJob;
             return dynValue;
         }
 
