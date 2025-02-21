@@ -1,7 +1,6 @@
 ---@class dfc.job: dfc.inner
 ---@field _participators { [dfc.faction]:Barotrauma.Character[] }
 ---@field identifier string
----@field name string
 ---@field onAssigned? fun(character:Barotrauma.Character)
 ---@field liveConsumption integer
 ---@field sort integer
@@ -15,21 +14,22 @@
 ---@field gearCount integer
 ---@field jobPrefab? Barotrauma.JobPrefab
 ---@field characterPrefab? Barotrauma.CharacterPrefab
----@field human boolean
 ---@field existAnySpawnPointSet boolean
 ---@field spawnPointSets dfc.spawnpointset[]
 ---@field spawnPointSetWeights number[]
----@overload fun(identifier: string, name: string, onAssigned?: fun(character:Barotrauma.Character), liveConsumption?: integer):self
+---@overload fun(identifier: string, name?: string, onAssigned?: fun(character:Barotrauma.Character), liveConsumption?: integer, jobName?: string, speciesName?: string):self
 local m = Class 'dfc.job'
 
 ---@class dfc.job : dfc.taggable, dfc.participatory
 Extends('dfc.job', 'dfc.taggable', 'dfc.participatory')
 
 ---@param identifier string
----@param name string
+---@param name? string
 ---@param onAssigned? fun(character:Barotrauma.Character)
 ---@param liveConsumption? integer
-function m:__init(identifier, name, onAssigned, liveConsumption)
+---@param jobName? string
+---@param speciesName? string
+function m:__init(identifier, name, onAssigned, liveConsumption, jobName, speciesName)
     Class 'dfc.taggable'.__init(self)
     Class 'dfc.participatory'.__init(self)
     self.identifier = identifier
@@ -40,26 +40,51 @@ function m:__init(identifier, name, onAssigned, liveConsumption)
     self.inhertCharacterInfo = self.inhertCharacterInfo == nil and false or self.inhertCharacterInfo
     self.disallowChangeJob = self.disallowChangeJob == nil and false or self.disallowChangeJob
     self.gears = {}
+    self.sortedGears = {}
     self.existAnyGear = false
     self.gearCount = 0
-    if JobPrefab.Prefabs.ContainsKey(name) then
-        self.jobPrefab = JobPrefab.Prefabs[name]
-    elseif CharacterPrefab.Prefabs.ContainsKey(name) then
-        self.characterPrefab = CharacterPrefab.Prefabs[name]
+
+    if jobName and JobPrefab.Prefabs.ContainsKey(jobName) then
+        self.jobPrefab = JobPrefab.Prefabs[jobName]
     end
-    self.human = self.jobPrefab or Identifier(name) == CharacterPrefab.HumanSpeciesName
+    if speciesName then
+        self.characterPrefab = CharacterPrefab.FindBySpeciesName(speciesName)
+    end
+
+    -- backward compatibility for hint
+    if name then
+        if not self.jobPrefab and JobPrefab.Prefabs.ContainsKey(name) then
+            self.jobPrefab = JobPrefab.Prefabs[name]
+        end
+        if not self.characterPrefab then
+            self.characterPrefab = CharacterPrefab.FindBySpeciesName(name)
+        end
+    end
+
+    if not self.characterPrefab then
+        self.characterPrefab = CharacterPrefab.HumanPrefab
+    end
+
     self.spawnPointSets = {}
     self.spawnPointSetWeights = {}
 end
 
 ---@param identifier string
-function m:addGear(identifier)
+---@param refreshCache? boolean
+function m:addGear(identifier, refreshCache)
     local gear = self.dfc.gears[identifier]
     if gear ~= nil then
         self.gears[identifier] = gear
         self.existAnyGear = true
         self.gearCount = moses.count(self.gears)
         self.shouldSortGears = true
+        if self.dfc and (refreshCache == nil and true or refreshCache) then
+            for _, faction in pairs(self.dfc.factions) do
+                if faction.jobs[self.identifier] then
+                    self.dfc:refreshCacheGears(faction, self)
+                end
+            end
+        end
     end
     return self
 end
@@ -73,11 +98,19 @@ function m:addGears(list)
 end
 
 ---@param identifier string
-function m:removeGear(identifier)
+---@param refreshCache? boolean
+function m:removeGear(identifier, refreshCache)
     self.gears[identifier] = nil
     self.existAnyGear = next(self.gears) ~= nil
     self.gearCount = moses.count(self.gears)
     self.shouldSortGears = true
+    if self.dfc and (refreshCache == nil and true or refreshCache) then
+        for _, faction in pairs(self.dfc.factions) do
+            if faction.jobs[self.identifier] then
+                self.dfc:refreshCacheGears(faction, self)
+            end
+        end
+    end
     return self
 end
 

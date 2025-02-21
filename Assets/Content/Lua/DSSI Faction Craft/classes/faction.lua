@@ -33,6 +33,7 @@ function m:__init(identifier, teamID, maxLives, onJoined)
     self.sort = self.sort or 0
     self.notifyTeammates = self.notifyTeammates == nil and true or self.notifyTeammates
     self.jobs = {}
+    self.sortedJobs = {}
     self.existAnyJob = false
     self.jobCount = 0
     self.allowRespawn = true
@@ -40,13 +41,17 @@ function m:__init(identifier, teamID, maxLives, onJoined)
 end
 
 ---@param identifier string
-function m:addJob(identifier)
+---@param refreshCache? boolean
+function m:addJob(identifier, refreshCache)
     local job = self.dfc.jobs[identifier]
     if job ~= nil then
         self.jobs[identifier] = job
         self.existAnyJob = true
         self.jobCount = moses.count(self.jobs)
         self.shouldSortJobs = true
+        if self.dfc and (refreshCache == nil and true or refreshCache) then
+            self.dfc:refreshCacheJobs(self)
+        end
     end
     return self
 end
@@ -60,11 +65,15 @@ function m:addJobs(list)
 end
 
 ---@param identifier string
-function m:removeJob(identifier)
+---@param refreshCache? boolean
+function m:removeJob(identifier, refreshCache)
     self.jobs[identifier] = nil
     self.existAnyJob = next(self.jobs) ~= nil
     self.jobCount = moses.count(self.jobs)
     self.shouldSortJobs = true
+    if self.dfc and (refreshCache == nil and true or refreshCache) then
+        self.dfc:refreshCacheJobs(self)
+    end
     return self
 end
 

@@ -39,6 +39,32 @@ function m:addParticipator(participator, key)
     table.insert(participators, participator)
 end
 
+---@param participator unknown
+---@param key? unknown
+function m:tryRemoveParticipatorByKey(participator, key)
+    local participators = self:tryGetParticipatorsByKeyEvenIfNil(key)
+    for i = #participators, 1, -1 do
+        if participators[i] == participator then
+            table.remove(participators, i)
+            return true
+        end
+    end
+    return false
+end
+
+---@param participator unknown
+function m:tryRemoveParticipator(participator)
+    for _, participators in pairs(self._participators) do
+        for i = #participators, 1, -1 do
+            if participators[i] == participator then
+                table.remove(participators, i)
+                return true
+            end
+        end
+    end
+    return false
+end
+
 ---@param participatoryGroup { [unknown]:dfc.participatory }
 ---@return number
 function m:calculateGroupWeights(participatoryGroup)
