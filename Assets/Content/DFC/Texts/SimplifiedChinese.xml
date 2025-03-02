@@ -58,7 +58,7 @@
   <entityname.dfc_scriptwifiinitializer>WIFI初始化脚本</entityname.dfc_scriptwifiinitializer>
   <entitydescription.dfc_scriptwifiinitializer>当任何带有wifi组件的物品被创建后，可以改变其 ‖color:gui.yellow‖wifi频道‖end‖ 和 ‖color:gui.yellow‖所属队伍‖end‖，通过链接(link) ‖color:0.2,0.2,1.0‖包含区域‖color:end‖ 或 ‖color:0.4,0.4,0.4‖不包含区域‖color:end‖ 用于匹配物品生成的位置，也支持通过与 ‖color:0.1,0.5,0.5‖物品清除器‖color:end‖ 相同的表达式规则限制物品的标识符和标签。</entitydescription.dfc_scriptwifiinitializer>
   <entityname.dfc_scriptsubmarinelocker>潜艇锁定器脚本</entityname.dfc_scriptsubmarinelocker>
-  <entitydescription.dfc_scriptsubmarinelocker>锁定所有的潜艇位置。</entitydescription.dfc_scriptsubmarinelocker>
+  <entitydescription.dfc_scriptsubmarinelocker>锁定当前脚本所在的潜艇。</entitydescription.dfc_scriptsubmarinelocker>
 
   <entityname.dfc_blocker>阻断器</entityname.dfc_blocker>
   <entityname.dfc_platform>平台</entityname.dfc_platform>

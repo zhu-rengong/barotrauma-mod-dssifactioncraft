@@ -58,7 +58,7 @@
   <entityname.dfc_scriptwifiinitializer>Script-WifiInitializer</entityname.dfc_scriptwifiinitializer>
   <entitydescription.dfc_scriptwifiinitializer>When a wifi component is created, changes its ‖color:gui.yellow‖Wifi Channel‖end‖ and ‖color:gui.yellow‖TeamID‖end‖, Link to ‖color:0.2,0.2,1.0‖Region+‖color:end‖ or ‖color:0.4,0.4,0.4‖Region-‖color:end‖ to constrain the search scope of the spawned wifi component. Support constructing a cleanup rule similar to ‖color:0.1,0.5,0.5‖Item Cleaner‖color:end‖ for matching the item of the wifi component.</entitydescription.dfc_scriptwifiinitializer>
   <entityname.dfc_scriptsubmarinelocker>Script-SubmarineLocker</entityname.dfc_scriptsubmarinelocker>
-  <entitydescription.dfc_scriptsubmarinelocker>Lock the location of all submarines</entitydescription.dfc_scriptsubmarinelocker>
+  <entitydescription.dfc_scriptsubmarinelocker>Lock the submarine where the current script is located.</entitydescription.dfc_scriptsubmarinelocker>
 
   <entityname.dfc_blocker>Blocker</entityname.dfc_blocker>
   <entityname.dfc_platform>Platform</entityname.dfc_platform>

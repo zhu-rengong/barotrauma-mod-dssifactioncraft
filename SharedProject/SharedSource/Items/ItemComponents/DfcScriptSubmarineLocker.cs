@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Barotrauma;
 using Barotrauma.Items.Components;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 
 namespace DSSIFactionCraft.Items.Components
@@ -28,12 +29,17 @@ namespace DSSIFactionCraft.Items.Components
             GameMain.LuaCs.Hook.Add("roundStart", nameof(DfcScriptSubmarineLocker), roundStart);
             object roundStart(params object[] args)
             {
+                Patch_SubmarineBody_Update.LockX.Clear();
+                Patch_SubmarineBody_Update.LockY.Clear();
                 submarineLockerScripts.RemoveAll(script => script.item.Removed);
                 if (!submarineLockerScripts.Any()) { return default; }
                 submarineLockerScripts.ForEach(script =>
                 {
-                    Submarine.LockX = script.LockX;
-                    Submarine.LockY = script.LockY;
+                    if (script.item.Submarine?.SubBody is SubmarineBody subBody)
+                    {
+                        if (script.LockX) { Patch_SubmarineBody_Update.LockX.Add(subBody); }
+                        if (script.LockY) { Patch_SubmarineBody_Update.LockY.Add(subBody); }
+                    }
                 });
                 return default;
             }
@@ -45,6 +51,21 @@ namespace DSSIFactionCraft.Items.Components
             if (IsMultiplayerClient) { return; }
 
             submarineLockerScripts.Add(this);
+        }
+    }
+
+    [HarmonyPatch(declaringType: typeof(SubmarineBody))]
+    [HarmonyPatch(methodName: nameof(SubmarineBody.Update))]
+    class Patch_SubmarineBody_Update
+    {
+        public static HashSet<SubmarineBody> LockX { get; set; } = new();
+        public static HashSet<SubmarineBody> LockY { get; set; } = new();
+
+        static void Prefix(SubmarineBody __instance)
+        {
+            __instance.Body.LinearVelocity = new Vector2(
+                LockX.Contains(__instance) ? 0.0f : __instance.Body.LinearVelocity.X,
+                LockY.Contains(__instance) ? 0.0f : __instance.Body.LinearVelocity.Y);
         }
     }
 }
