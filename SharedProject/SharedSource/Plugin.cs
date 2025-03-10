@@ -23,7 +23,6 @@ namespace DSSIFactionCraft
     {
         private Harmony harmony;
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public void Initialize()
         {
             harmony = new Harmony("dfc");

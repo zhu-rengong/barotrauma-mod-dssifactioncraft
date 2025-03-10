@@ -40,10 +40,14 @@ namespace DSSIFactionCraft
             [HarmonyPrefix]
             static bool Override(RespawnManager __instance)
             {
-                if (DfcModule.OverrideRespawnManager is DynValue { Type: DataType.Boolean, Boolean: true })
+                if (DfcModule.Loaded is DynValue { Type: DataType.Table })
                 {
-                    DfcRespawnManager?.Update();
+                    if (DfcModule.OverrideRespawnManager is DynValue { Type: DataType.Boolean, Boolean: true })
+                    {
+                        DfcRespawnManager?.Update();
 
+                    }
+                    
                     return false;
                 }
 
