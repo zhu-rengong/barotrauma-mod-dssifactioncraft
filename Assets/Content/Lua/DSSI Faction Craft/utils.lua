@@ -52,15 +52,16 @@ function DFC.GetConnectedClientListBySteamIDs(steamIDs)
 end
 
 ---@param accountIds string[]
+---@param clientsNeedToCheck? Barotrauma.Networking.Client[]
 ---@return Barotrauma.Networking.Client[]
-function DFC.GetClientListByAccountIds(accountIds)
+function DFC.GetClientListByAccountIds(accountIds, clientsNeedToCheck)
     local clientList = {}
-    local clientsToInclude = Client.ClientList
-    local count = #clientsToInclude
+    clientsNeedToCheck = clientsNeedToCheck or Client.ClientList
+    local count = #clientsNeedToCheck
     for _, accountId in ipairs(accountIds) do
         for i = count, 1, -1 do
-            if clientsToInclude[i].AccountId.StringRepresentation == accountId then
-                t_insert(clientList, t_remove(clientsToInclude, i))
+            if clientsNeedToCheck[i].AccountId.StringRepresentation == accountId then
+                t_insert(clientList, t_remove(clientsNeedToCheck, i))
                 count = count - 1
                 break
             end

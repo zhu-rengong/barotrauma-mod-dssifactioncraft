@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -7,6 +8,7 @@ using Microsoft.Xna.Framework;
 
 namespace DSSIFactionCraft.Items.Components
 {
+    [Obsolete]
     internal class DfcDataSetter : ItemComponent
     {
         protected static bool IsMultiplayerClient => GameMain.NetworkMember?.IsClient ?? false;
