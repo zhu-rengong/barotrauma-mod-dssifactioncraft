@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<contentpackage name="DSSI Faction Craft" modversion="2.9995" corepackage="False" steamworkshopid="3026984689" gameversion="1.7.7.0">
+<contentpackage name="DSSI Faction Craft" modversion="2.99999" corepackage="False" steamworkshopid="3026984689" gameversion="1.7.7.0">
   <Item file="%ModDir%/DFC/MapDevTools/lights.xml" />
   <Item file="%ModDir%/DFC/MapDevTools/tools.xml" />
   <Item file="%ModDir%/DFC/MapDevTools/luacomponent.xml" />

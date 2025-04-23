@@ -16,6 +16,7 @@ using HarmonyLib;
 [assembly: IgnoresAccessChecksTo("DedicatedServer")]
 #endif
 [assembly: IgnoresAccessChecksTo("BarotraumaCore")]
+[assembly: IgnoresAccessChecksTo("MoonSharp.Interpreter")]
 
 namespace DSSIFactionCraft
 {

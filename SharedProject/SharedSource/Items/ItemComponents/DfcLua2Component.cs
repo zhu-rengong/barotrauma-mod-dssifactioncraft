@@ -13,15 +13,23 @@ using System.Diagnostics.CodeAnalysis;
 using Barotrauma.Extensions;
 using System.Linq;
 using System.Net.NetworkInformation;
+using HarmonyLib;
+using MoonSharp.Interpreter.Compatibility;
+using MoonSharp.Interpreter.Debugging;
+using System.Xml.Linq;
 
 namespace DSSIFactionCraft
 {
     partial class DfcLua2Component : ItemComponent
     {
-        private const string PARAMETER_NAME_OUT = "out";
-        private const string PARAMETER_NAME_LUA_ITEM = "luaItem";
-        private const string PARAMETER_NAME_CLEAR = nameof(clear);
-        private const string PARAMETER_NAME_SYNC = nameof(sync);
+        private const string FIELD_NAME_IS_CLIENT = "isClient";
+        private const string FIELD_NAME_IS_SERVER = "isServer";
+        private const string FIELD_NAME_IS_SINGLEPLAYER = "isSingleplayer";
+        private const string FIELD_NAME_IS_MULTIPLAYER = "isMultiplayer";
+        private const string FIELD_NAME_LUA_ITEM = "luaItem";
+        private const string FIELD_NAME_OUT = "out";
+        private const string FIELD_NAME_CLEAR = nameof(clear);
+        private const string FIELD_NAME_SYNC = nameof(sync);
         private const string UPVALUE_NAME_LOADED = nameof(loaded);
         private const string UPVALUE_NAME_UPD = nameof(upd);
         private const string UPVALUE_NAME_INP = nameof(inp);
@@ -30,40 +38,126 @@ namespace DSSIFactionCraft
         private readonly static Regex inpRegex = new Regex(@"^signal_in(\d+)$");
         private readonly static Regex outRegex = new Regex(@"^signal_out(\d+)$");
 
-        private ButtonTerminal networkComponent;
-        private SerializableProperty signals;
+        private ButtonTerminal? networkComponent;
+        private SerializableProperty? signals;
         private int signalsLength;
-        private ButtonTerminal.EventData[] syncEventDatas;
+        private ButtonTerminal.EventData[]? syncEventDatas;
         private Item.ChangePropertyEventData signalsChangePropertyEventData;
 
-        private Dictionary<int, Connection> outPinMapConnection = new();
-        private Dictionary<Connection, int> inpConnectionMapPin = new();
-
-        private Script? script;
-        private DynValue? loaded;
-        private DynValue? upd;
-        private DynValue? inp;
-        private DynValue? sender;
-        private DynValue? senders;
-
-        private void HandleException(string source, InterpreterException e, bool stop = false)
-        {
-            LuaCsLogger.LogError($"[{Item}] [{source}] {e.DecoratedMessage}", LuaCsMessageOrigin.LuaMod);
-            if (stop) { Stop(); }
-        }
-
-        private void Stop()
-        {
-            script = null;
-            loaded = null;
-            upd = null;
-            inp = null;
-            sender = null;
-            senders = null;
-            IsActive = false;
-        }
+        private Dictionary<int, Connection> outPinMappingConnection = new();
+        private Dictionary<Connection, int> inpConnectionMappingPin = new();
 
         private string chunk = string.Empty;
+        private Script? script;
+        private DynValue loaded = DynValue.Nil;
+        private DynValue upd = DynValue.Nil;
+        private DynValue inp = DynValue.Nil;
+        private DynValue sender = DynValue.Nil;
+        private DynValue senders = DynValue.Nil;
+
+        private void HandleException(string source, InterpreterException e, bool terminate = false)
+        {
+            void LogError(string? location = null, string? lines = null)
+            {
+                string message = location is null
+                    ? $"[{Item}] [{source}] {e.Message}"
+                    : lines is null
+                        ? $"[{Item}] [{source}] {e.Message}\n{new string(' ', 4)}at {location}"
+                        : $"[{Item}] [{source}] {e.Message}\n{new string(' ', 4)}at {location}, source:\n{lines}";
+
+                LuaCsLogger.LogError(message, LuaCsMessageOrigin.LuaMod);
+            }
+
+            if (script is not null
+                && Traverse.Create(script).Field("m_MainProcessor").GetValue<MoonSharp.Interpreter.Execution.VM.Processor>() is var scriptMainProcessor
+                && scriptMainProcessor is not null
+                && scriptMainProcessor.GetCurrentSourceRef(e.InstructionPtr) is var sref
+                && sref is not null)
+            {
+                int chunkRelativeToCodeStartLineOffset = 15;
+                int chunkRelativeToCodeEndLineOffset = 9;
+                string? location;
+                string? errorSource;
+                SourceCode sc = script.GetSourceCode(sref.SourceIdx);
+
+                string GetLinesToPrint(int fromLine, int toLine, int extendedLines = 5)
+                {
+                    int extendedForwardLines = extendedLines / 2;
+                    int extendedBackwardLines = extendedLines - extendedForwardLines;
+                    int discardLines = Math.Max(1 + chunkRelativeToCodeStartLineOffset - (sref.FromLine - extendedBackwardLines), 0);
+                    extendedBackwardLines -= discardLines;
+                    extendedForwardLines += discardLines;
+                    int startLine = sref.FromLine - extendedBackwardLines;
+                    int endLine = Math.Min(sref.ToLine + extendedForwardLines, (sc.Lines.Length - 1) - chunkRelativeToCodeEndLineOffset); // Line 0 of sc.Lines is an auto-generated comment, so we need to account for the extra line in sc.Lines.
+                    int lineColumnWidth = Math.Max(
+                        (startLine - chunkRelativeToCodeStartLineOffset).ToString().Length,
+                        (endLine - chunkRelativeToCodeStartLineOffset).ToString().Length);
+                    return string.Join(
+                        '\n',
+                        Enumerable.Range(startLine, endLine - startLine + 1)
+                            .Select(line => $"{(line - chunkRelativeToCodeStartLineOffset).ToString().PadLeft(lineColumnWidth, '0')}.{new string(' ', 4)}{sc.Lines[line]}")
+                    );
+                }
+
+                if (sref.IsClrLocation)
+                {
+                    location = "[clr]";
+                    errorSource = null;
+                }
+                else if (sref.FromLine == sref.ToLine)
+                {
+                    if (sref.FromChar == sref.ToChar)
+                    {
+                        location = $"{sc.Name}:({sref.FromLine - chunkRelativeToCodeStartLineOffset},{sref.FromChar})";
+                    }
+                    else
+                    {
+                        location = $"{sc.Name}:({sref.FromLine - chunkRelativeToCodeStartLineOffset},{sref.FromChar}-{sref.ToChar})";
+                    }
+                    errorSource = GetLinesToPrint(sref.FromLine, sref.ToLine);
+                }
+                else
+                {
+                    location = $"{sc.Name}:({sref.FromLine - chunkRelativeToCodeStartLineOffset},{sref.FromChar}-{sref.ToLine - chunkRelativeToCodeStartLineOffset},{sref.ToChar})";
+                    errorSource = GetLinesToPrint(sref.FromLine, sref.ToLine);
+                }
+                LogError(location, errorSource);
+            }
+            else
+            {
+                LogError();
+            }
+
+            if (terminate) { Terminate(); }
+        }
+
+        private void Terminate()
+        {
+            script = null;
+            loaded = DynValue.Nil;
+            upd = DynValue.Nil;
+            inp = DynValue.Nil;
+            sender = DynValue.Nil;
+            senders = DynValue.Nil;
+        }
+
+        public override bool UpdateWhenInactive => true;
+
+        [InGameEditable, Serialize(true, IsPropertySaveable.Yes, alwaysUseInstanceValues: true, translationTextTag: "sp.")]
+        public bool CompileInSingleplayer { get; set; }
+
+        [InGameEditable, Serialize(false, IsPropertySaveable.Yes, alwaysUseInstanceValues: true, translationTextTag: "sp.")]
+        public bool CompileOnClientInMultiplayer { get; set; }
+
+        [InGameEditable, Serialize(true, IsPropertySaveable.Yes, alwaysUseInstanceValues: true, translationTextTag: "sp.")]
+        public bool CompileOnServerInMultiplayer { get; set; }
+
+        private bool AllowCompile => GameMain.IsSingleplayer
+            ? CompileInSingleplayer
+            : GameMain.NetworkMember.IsClient
+                ? CompileOnClientInMultiplayer
+                : CompileOnServerInMultiplayer;
+
         [InGameEditable, Serialize("", IsPropertySaveable.Yes, description: "A lua chunk to be complied.", alwaysUseInstanceValues: true)]
         public string Chunk
         {
@@ -71,33 +165,54 @@ namespace DSSIFactionCraft
             set
             {
                 if (chunk == value) { return; }
+                Terminate();
                 chunk = value;
+                if (chunk.IsNullOrEmpty()) { return; }
 
-                if (GameMain.NetworkMember?.IsClient ?? false) { return; }
 #if CLIENT
                 if (SubEditorScreen.IsSubEditor()) { return; }
 #endif
-                Stop();
 
-                if (chunk.IsNullOrEmpty()) { return; }
+                if (!AllowCompile) { return; }
 
                 script = GameMain.LuaCs.Lua;
 
                 try
                 {
-                    var externalFunction = script.DoString($@"
-return function({PARAMETER_NAME_LUA_ITEM}, {PARAMETER_NAME_OUT}, {PARAMETER_NAME_CLEAR}, {PARAMETER_NAME_SYNC}) local {UPVALUE_NAME_LOADED}, {UPVALUE_NAME_UPD}, {UPVALUE_NAME_INP}, {UPVALUE_NAME_SENDER}, {UPVALUE_NAME_SENDERS}
+                    var initialize = script.DoString($@"
+return function(_)
+    local {FIELD_NAME_IS_CLIENT} = CLIENT
+    local {FIELD_NAME_IS_SERVER} = SERVER
+    local {FIELD_NAME_IS_SINGLEPLAYER} = _.{FIELD_NAME_IS_SINGLEPLAYER}
+    local {FIELD_NAME_IS_MULTIPLAYER} = _.{FIELD_NAME_IS_MULTIPLAYER}
+    local {FIELD_NAME_LUA_ITEM} = _.{FIELD_NAME_LUA_ITEM}
+    local {FIELD_NAME_OUT} = _.{FIELD_NAME_OUT}
+    local {FIELD_NAME_CLEAR} = _.{FIELD_NAME_CLEAR}
+    local {FIELD_NAME_SYNC} = _.{FIELD_NAME_SYNC}
+    local {UPVALUE_NAME_LOADED}
+    local {UPVALUE_NAME_UPD}
+    local {UPVALUE_NAME_INP}
+    local {UPVALUE_NAME_SENDER}
+    local {UPVALUE_NAME_SENDERS}
 {chunk}
-return function() return {UPVALUE_NAME_LOADED}, {UPVALUE_NAME_UPD}, {UPVALUE_NAME_INP}, {UPVALUE_NAME_SENDER}, {UPVALUE_NAME_SENDERS} end
+    return function()
+        return
+            {UPVALUE_NAME_LOADED},
+            {UPVALUE_NAME_UPD},
+            {UPVALUE_NAME_INP},
+            {UPVALUE_NAME_SENDER},
+            {UPVALUE_NAME_SENDERS}
+    end
 end", codeFriendlyName: null);
 
-                    var @out = new Out(this);
-                    var outUserData = UserData.Create(@out);
-                    var internalClosure = script.Call(externalFunction,
-                        item,
-                        outUserData,
-                        DynValue.NewCallback(clear),
-                        DynValue.NewCallback(sync)).Function;
+                    var args = new Table(script);
+                    args[FIELD_NAME_IS_SINGLEPLAYER] = GameMain.IsSingleplayer;
+                    args[FIELD_NAME_IS_MULTIPLAYER] = GameMain.IsMultiplayer;
+                    args[FIELD_NAME_LUA_ITEM] = this.item;
+                    args[FIELD_NAME_OUT] = UserData.Create(this, new OutDescriptor());
+                    args[FIELD_NAME_CLEAR] = DynValue.NewCallback(clear);
+                    args[FIELD_NAME_SYNC] = DynValue.NewCallback(sync);
+                    var internalClosure = script.Call(initialize, DynValue.NewTable(args)).Function;
 
                     Dictionary<string, DynValue> nameMapUpvalue = new(
                         Enumerable.Range(0, internalClosure.GetUpvaluesCount())
@@ -110,83 +225,92 @@ end", codeFriendlyName: null);
                     inp = nameMapUpvalue[UPVALUE_NAME_INP];
                     sender = nameMapUpvalue[UPVALUE_NAME_SENDER];
                     senders = nameMapUpvalue[UPVALUE_NAME_SENDERS];
-                    @out.Sender = sender;
-
-                    IsActive = true;
                 }
                 catch (SyntaxErrorException e)
                 {
-                    HandleException("syntax", e, stop: true);
+                    HandleException("compile", e, terminate: true);
                 }
                 catch (ScriptRuntimeException e)
                 {
-                    HandleException("runtime", e, stop: true);
+                    HandleException("compile", e, terminate: true);
                 }
             }
         }
 
         static DfcLua2Component()
         {
-            UserData.RegisterType<Out>(InteropAccessMode.NoReflectionAllowed, "out");
+            UserData.RegisterType<DfcLua2Component>();
         }
 
-        public DfcLua2Component(Item item, ContentXElement element) : base(item, element)
+        public DfcLua2Component(Item item, ContentXElement element) : base(item, element) { }
+
+        public class OutDescriptor : IUserDataDescriptor
         {
+            public string Name => "out";
 
-        }
+            public Type Type => typeof(DfcLua2Component);
 
-        class Out : IUserDataType
-        {
-            private Item item;
-            private Dictionary<int, Connection> outPinMapConnection;
-            public DynValue Sender { private get; set; }
-
-            public Out([DisallowNull] DfcLua2Component luaComponent)
-            {
-                item = luaComponent.Item;
-                outPinMapConnection = luaComponent.outPinMapConnection;
-            }
-
-            public DynValue Index(Script script, DynValue index, bool isDirectIndexing)
+            public DynValue Index(Script script, object obj, DynValue index, bool isDirectIndexing)
             {
                 throw new ScriptRuntimeException("__index metamethod not implemented");
             }
 
-            public bool SetIndex(Script script, DynValue index, DynValue value, bool isDirectIndexing)
+            public bool SetIndex(Script script, object obj, DynValue index, DynValue value, bool isDirectIndexing)
             {
+                DfcLua2Component? luaComponent = obj as DfcLua2Component;
+
+                if (luaComponent is null)
+                {
+                    throw new ScriptRuntimeException("unknown behavior!");
+                }
+
+                if (luaComponent.script is null)
+                {
+                    throw new ScriptRuntimeException("out is prohibited when no script!");
+                }
+
                 if (index.Type != DataType.Number)
                 {
                     throw new ScriptRuntimeException($"pin must be an 'integer', but got '{index.Type}'!");
                 }
 
-                var indexNumber = index.Number;
-                if (indexNumber % 1 != 0)
+                if (index.Number != Math.Truncate(index.Number))
                 {
-                    throw new ScriptRuntimeException($"pin must be an 'integer', but got '{indexNumber}'!");
+                    throw new ScriptRuntimeException($"pin must be an 'integer', but got '{index.Number}'!");
                 }
 
-                var pin = (int)indexNumber;
+                int pin = (int)index.Number;
 
-                if (!outPinMapConnection.TryGetValue(pin, out Connection connection))
+                if (!luaComponent.outPinMappingConnection.TryGetValue(pin, out var connection))
                 {
                     throw new ScriptRuntimeException($"invalid pin {pin}!");
                 }
 
-                item.SendSignal(new Signal(value.Type switch
+                luaComponent.item.SendSignal(new Signal(value.Type switch
                 {
                     DataType.Number => value.Number.ToString(CultureInfo.InvariantCulture),
                     DataType.String => value.String,
                     _ => throw new ScriptRuntimeException($"pin {pin} outputs an invalid value type '{value.Type}'!")
-                }, sender: (Sender?.IsNotNil() ?? false) ? Sender.ToObject<Character>() : null), connection);
+                }, sender: luaComponent.sender.IsNotNil() ? luaComponent.sender.ToObject<Character>() : null), connection);
 
                 return true;
             }
 
-            public DynValue MetaIndex(Script script, string metaname)
+            public string AsString(object obj)
+            {
+                return nameof(DfcLua2Component);
+            }
+
+            public DynValue MetaIndex(Script script, object obj, string metaname)
             {
                 throw new ScriptRuntimeException($"{metaname} metamethod not implemented");
             }
-        };
+
+            public bool IsTypeCompatible(Type type, object obj)
+            {
+                return Framework.Do.IsInstanceOfType(type, obj);
+            }
+        }
 
         private static DynValue clear(ScriptExecutionContext executionContext, CallbackArguments args)
         {
@@ -197,6 +321,8 @@ end", codeFriendlyName: null);
         private DynValue sync(ScriptExecutionContext executionContext, CallbackArguments args)
         {
 #if SERVER
+            if (networkComponent is null || syncEventDatas is null) { return DynValue.Nil; }
+
             Table syncTable = args.AsType(0, nameof(sync), DataType.Table, false).Table;
             GameMain.NetworkMember.CreateEntityEvent(item, signalsChangePropertyEventData);
             for (int i = 0; i < signalsLength; i++)
@@ -236,11 +362,11 @@ end", codeFriendlyName: null);
             {
                 if (outRegex.Match(connection.Name) is { Success: true } outMatch)
                 {
-                    outPinMapConnection.Add(int.Parse(outMatch.Groups[1].Value), connection);
+                    outPinMappingConnection.Add(int.Parse(outMatch.Groups[1].Value), connection);
                 }
                 else if (inpRegex.Match(connection.Name) is { Success: true } inpMatch)
                 {
-                    inpConnectionMapPin.Add(connection, int.Parse(inpMatch.Groups[1].Value));
+                    inpConnectionMappingPin.Add(connection, int.Parse(inpMatch.Groups[1].Value));
                 }
             }
         }
@@ -249,7 +375,7 @@ end", codeFriendlyName: null);
         {
             base.OnMapLoaded();
 
-            if (!isActive || loaded.Type != DataType.Function) { return; }
+            if (script is null || loaded.Type != DataType.Function) { return; }
 
             try
             {
@@ -257,13 +383,13 @@ end", codeFriendlyName: null);
             }
             catch (ScriptRuntimeException e)
             {
-                HandleException("loaded", e, stop: true);
+                HandleException(nameof(loaded), e, terminate: true);
             }
         }
 
         public override void Update(float deltaTime, Camera cam)
         {
-            if (upd.Type != DataType.Function) { return; }
+            if (script is null || upd.Type != DataType.Function) { return; }
 
             try
             {
@@ -271,15 +397,15 @@ end", codeFriendlyName: null);
             }
             catch (ScriptRuntimeException e)
             {
-                HandleException("upd", e, stop: true);
+                HandleException(nameof(upd), e, terminate: true);
             }
         }
 
         public override void ReceiveSignal(Signal signal, Connection connection)
         {
-            if (!isActive || inp.Type == DataType.Nil) { return; }
+            if (script is null || inp.Type == DataType.Nil) { return; }
 
-            if (inpConnectionMapPin.TryGetValue(connection, out int pin))
+            if (inpConnectionMappingPin.TryGetValue(connection, out int pin))
             {
                 if (senders.Type == DataType.Table && signal.sender is Character signalSender)
                 {
@@ -305,7 +431,7 @@ end", codeFriendlyName: null);
                         }
                         catch (ScriptRuntimeException e)
                         {
-                            HandleException("inp", e, stop: true);
+                            HandleException(nameof(inp), e, terminate: true);
                         }
                         break;
                     default:
