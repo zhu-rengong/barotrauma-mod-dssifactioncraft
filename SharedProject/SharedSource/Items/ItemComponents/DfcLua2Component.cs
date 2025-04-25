@@ -22,14 +22,23 @@ namespace DSSIFactionCraft
 {
     partial class DfcLua2Component : ItemComponent
     {
-        private const string FIELD_NAME_IS_CLIENT = "isClient";
-        private const string FIELD_NAME_IS_SERVER = "isServer";
-        private const string FIELD_NAME_IS_SINGLEPLAYER = "isSingleplayer";
-        private const string FIELD_NAME_IS_MULTIPLAYER = "isMultiplayer";
-        private const string FIELD_NAME_LUA_ITEM = "luaItem";
-        private const string FIELD_NAME_OUT = "out";
-        private const string FIELD_NAME_CLEAR = nameof(clear);
-        private const string FIELD_NAME_SYNC = nameof(sync);
+#if SERVER
+        public const bool IsServer = true;
+        public const bool IsClient = false;
+#else
+        public const bool IsServer = false;
+        public const bool IsClient = true;
+#endif
+
+        private const string LOCAL_NAME_IS_CLIENT = "isClient";
+        private const string LOCAL_NAME_IS_SERVER = "isServer";
+        private const string LOCAL_NAME_IS_SINGLEPLAYER = "isSingleplayer";
+        private const string LOCAL_NAME_IS_MULTIPLAYER = "isMultiplayer";
+        private const string LOCAL_NAME_GET_TOTAL_TIME = "GetTotalTime";
+        private const string LOCAL_NAME_LUA_ITEM = "luaItem";
+        private const string LOCAL_NAME_OUT = "out";
+        private const string LOCAL_NAME_CLEAR = nameof(clear);
+        private const string LOCAL_NAME_SYNC = nameof(sync);
         private const string UPVALUE_NAME_LOADED = nameof(loaded);
         private const string UPVALUE_NAME_UPD = nameof(upd);
         private const string UPVALUE_NAME_INP = nameof(inp);
@@ -74,7 +83,7 @@ namespace DSSIFactionCraft
                 && scriptMainProcessor.GetCurrentSourceRef(e.InstructionPtr) is var sref
                 && sref is not null)
             {
-                int chunkRelativeToCodeStartLineOffset = 15;
+                int chunkRelativeToCodeStartLineOffset = 16;
                 int chunkRelativeToCodeEndLineOffset = 9;
                 string? location;
                 string? errorSource;
@@ -158,6 +167,13 @@ namespace DSSIFactionCraft
                 ? CompileOnClientInMultiplayer
                 : CompileOnServerInMultiplayer;
 
+        [Serialize(false, IsPropertySaveable.Yes, description: "Can the properties of the component be edited in-game in multiplayer. Use to prevent clients uploading a malicious code to the server."), Editable()]
+        public bool AllowInGameEditingInMultiplayer
+        {
+            get;
+            set;
+        }
+
         [InGameEditable, Serialize("", IsPropertySaveable.Yes, description: "A lua chunk to be complied.", alwaysUseInstanceValues: true)]
         public string Chunk
         {
@@ -175,20 +191,53 @@ namespace DSSIFactionCraft
 
                 if (!AllowCompile) { return; }
 
-                script = GameMain.LuaCs.Lua;
-
                 try
                 {
+                    if (GameMain.NetworkMember?.IsClient ?? false)
+                    {
+                        // Sandboxing
+                        // The following modules are prohibited:
+                        // LoadMethods, The load methods: "load", "loadsafe", "loadfile", "loadfilesafe", "dofile" and "require"
+                        // IO, The methods of "io" and "file" packages
+                        // OS_System, The methods of "os" package excluding those listed for OS_Time
+                        script = new Script(CoreModules.Preset_SoftSandbox | CoreModules.Debug & (~(CoreModules.LoadMethods | CoreModules.IO | CoreModules.OS_System)));
+                        script.Options.DebugPrint = (string o) => LuaCsLogger.LogMessage(o);
+                        script.Options.CheckThreadAccess = false;
+
+                        if (Path.GetDirectoryName(item.Prefab?.ContentPackage?.Path) is string packagePath)
+                        {
+                            LuaScriptLoader scriptLoader = new();
+                            scriptLoader.ModulePaths = new string[] { };
+                            script.Options.ScriptLoader = scriptLoader;
+                            script.Globals["setmodulepaths"] = (Action<string[]>)(str => scriptLoader.ModulePaths = str);
+                            script.Globals["require"] = (Func<string, Table, DynValue>)new LuaRequire(script).Require;
+                            script.Globals["LuaUserData"] = UserData.CreateStatic<LuaUserData>();
+
+                            string entryPath = Path.Combine(packagePath, "DFC/MapDevTools/Lua2Component/Sandboxing/entry.lua");
+
+                            script.LoadFile(entryPath).Function.Call(Path.GetDirectoryName(Path.GetFullPath(entryPath)));
+
+                            script.Globals.Remove("setmodulepaths");
+                            script.Globals.Remove("require");
+                            script.Globals.Remove("LuaUserData");
+                        }
+                    }
+                    else
+                    {
+                        script = GameMain.LuaCs.Lua;
+                    }
+
                     var initialize = script.DoString($@"
 return function(_)
-    local {FIELD_NAME_IS_CLIENT} = CLIENT
-    local {FIELD_NAME_IS_SERVER} = SERVER
-    local {FIELD_NAME_IS_SINGLEPLAYER} = _.{FIELD_NAME_IS_SINGLEPLAYER}
-    local {FIELD_NAME_IS_MULTIPLAYER} = _.{FIELD_NAME_IS_MULTIPLAYER}
-    local {FIELD_NAME_LUA_ITEM} = _.{FIELD_NAME_LUA_ITEM}
-    local {FIELD_NAME_OUT} = _.{FIELD_NAME_OUT}
-    local {FIELD_NAME_CLEAR} = _.{FIELD_NAME_CLEAR}
-    local {FIELD_NAME_SYNC} = _.{FIELD_NAME_SYNC}
+    local {LOCAL_NAME_IS_CLIENT} = _.{LOCAL_NAME_IS_CLIENT}
+    local {LOCAL_NAME_IS_SERVER} = _.{LOCAL_NAME_IS_SERVER}
+    local {LOCAL_NAME_IS_SINGLEPLAYER} = _.{LOCAL_NAME_IS_SINGLEPLAYER}
+    local {LOCAL_NAME_IS_MULTIPLAYER} = _.{LOCAL_NAME_IS_MULTIPLAYER}
+    local {LOCAL_NAME_GET_TOTAL_TIME} = _.{LOCAL_NAME_GET_TOTAL_TIME}
+    local {LOCAL_NAME_LUA_ITEM} = _.{LOCAL_NAME_LUA_ITEM}
+    local {LOCAL_NAME_OUT} = _.{LOCAL_NAME_OUT}
+    local {LOCAL_NAME_CLEAR} = _.{LOCAL_NAME_CLEAR}
+    local {LOCAL_NAME_SYNC} = _.{LOCAL_NAME_SYNC}
     local {UPVALUE_NAME_LOADED}
     local {UPVALUE_NAME_UPD}
     local {UPVALUE_NAME_INP}
@@ -206,12 +255,15 @@ return function(_)
 end", codeFriendlyName: null);
 
                     var args = new Table(script);
-                    args[FIELD_NAME_IS_SINGLEPLAYER] = GameMain.IsSingleplayer;
-                    args[FIELD_NAME_IS_MULTIPLAYER] = GameMain.IsMultiplayer;
-                    args[FIELD_NAME_LUA_ITEM] = this.item;
-                    args[FIELD_NAME_OUT] = UserData.Create(this, new OutDescriptor());
-                    args[FIELD_NAME_CLEAR] = DynValue.NewCallback(clear);
-                    args[FIELD_NAME_SYNC] = DynValue.NewCallback(sync);
+                    args[LOCAL_NAME_IS_CLIENT] = IsClient;
+                    args[LOCAL_NAME_IS_SERVER] = IsServer;
+                    args[LOCAL_NAME_IS_SINGLEPLAYER] = GameMain.IsSingleplayer;
+                    args[LOCAL_NAME_IS_MULTIPLAYER] = GameMain.IsMultiplayer;
+                    args[LOCAL_NAME_GET_TOTAL_TIME] = DynValue.NewCallback((ctx, args) => DynValue.NewNumber(Timing.TotalTime));
+                    args[LOCAL_NAME_LUA_ITEM] = this.item;
+                    args[LOCAL_NAME_OUT] = UserData.Create(this, new OutDescriptor());
+                    args[LOCAL_NAME_CLEAR] = DynValue.NewCallback(clear);
+                    args[LOCAL_NAME_SYNC] = DynValue.NewCallback(sync);
                     var internalClosure = script.Call(initialize, DynValue.NewTable(args)).Function;
 
                     Dictionary<string, DynValue> nameMapUpvalue = new(
@@ -239,7 +291,10 @@ end", codeFriendlyName: null);
 
         static DfcLua2Component()
         {
-            UserData.RegisterType<DfcLua2Component>();
+            if (!UserData.IsTypeRegistered<DfcLua2Component>())
+            {
+                UserData.RegisterType<DfcLua2Component>();
+            }
         }
 
         public DfcLua2Component(Item item, ContentXElement element) : base(item, element) { }
@@ -349,6 +404,11 @@ end", codeFriendlyName: null);
         public override void OnItemLoaded()
         {
             base.OnItemLoaded();
+
+            if (GameMain.IsMultiplayer && !AllowInGameEditingInMultiplayer)
+            {
+                AllowInGameEditing = false;
+            }
 
             networkComponent = item.GetComponent<ButtonTerminal>();
             signals = networkComponent.SerializableProperties[nameof(ButtonTerminal.Signals).ToIdentifier()];
