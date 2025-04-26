@@ -13,6 +13,7 @@
 ---@field jobCount integer
 ---@field allowRespawn boolean
 ---@field respawnIntervalMultiplier number
+---@field getRespawnLimitPerTime fun(identifier: string, dead: integer, total: integer):integer
 ---@overload fun(identifier: string, teamID: Barotrauma.CharacterTeamType, maxLives?: integer, onJoined?: fun(character: Barotrauma.Character)):self
 local m = Class 'dfc.faction'
 
@@ -31,13 +32,14 @@ function m:__init(identifier, teamID, maxLives, onJoined)
     self.maxLives = maxLives or 100
     self.onJoined = onJoined
     self.sort = self.sort or 0
-    self.notifyTeammates = self.notifyTeammates == nil and true or self.notifyTeammates
+    self.notifyTeammates = true
     self.jobs = {}
     self.sortedJobs = {}
     self.existAnyJob = false
     self.jobCount = 0
     self.allowRespawn = true
     self.respawnIntervalMultiplier = 1.0
+    function self.getRespawnLimitPerTime() return -1 end
 end
 
 ---@param identifier string

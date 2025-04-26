@@ -21,7 +21,7 @@ namespace DSSIFactionCraft
         public const string FIELD_NAME_OVERRIDE_RESPAWN_MANAGER = "OverrideRespawnManager";
 
         public static DynValue OverrideRespawnManager => GameMain.LuaCs.Lua.Globals.RawGet(new object[] { "DFC", FIELD_NAME_OVERRIDE_RESPAWN_MANAGER });
-        public static DynValue WaitRespawn => GameMain.LuaCs.Lua.Globals.RawGet(new object[] { "DFC", "Loaded", "_waitRespawn" });
+        public static DynValue DeathTime => GameMain.LuaCs.Lua.Globals.RawGet(new object[] { "DFC", "Loaded", "_deathTime" });
         public static DynValue AllowRespawn => GameMain.LuaCs.Lua.Globals.RawGet(new object[] { "DFC", "Loaded", "allowRespawn" });
 
         public static partial void MoonSharpInitProjSpecific(Table globalTable, Table dfcTable)

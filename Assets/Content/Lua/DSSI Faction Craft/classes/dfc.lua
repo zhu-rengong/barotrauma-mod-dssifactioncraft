@@ -31,7 +31,7 @@ local selectionModeRandom = 2
 ---@field _joinedFaction { [string|unknown]:dfc.faction }
 ---@field _promptedJoinFaction { [string]:boolean }
 ---@field _assignedJob { [string]:dfc.job }
----@field _waitRespawn { [string]:boolean }
+---@field _deathTime { [string]:boolean }
 ---@field _promptedAssignJob { [string]:boolean }
 ---@field _characterFaction { [Barotrauma.Character]:dfc.faction }
 ---@field _characterJob { [Barotrauma.Character]:dfc.job }
@@ -81,7 +81,7 @@ function m:resetRoundDatas()
     self._joinedFaction = {}
     self._promptedJoinFaction = {}
     self._assignedJob = {}
-    self._waitRespawn = {}
+    self._deathTime = {}
     self._promptedAssignJob = {}
     self._characterFaction = {}
     self._characterJob = {}
@@ -366,7 +366,7 @@ function m:initialize()
                         if type(ret) == "function" then
                             onJoinedClosure = ret
                         else
-                            log(("Failed to load chunk for faction(%s) with an error message: %s"):format(parameters.identifier, ret), 'e')
+                            log(("Failed to load 'onJoined' chunk for faction(%s) with an error message: %s"):format(parameters.identifier, ret), 'e')
                         end
                     end
                     local faction = self:newFaction(parameters.identifier, parameters.teamID, parameters.maxLives, onJoinedClosure)
@@ -375,10 +375,22 @@ function m:initialize()
                     faction.participantWeight = parameters.participantWeight
                     faction.characterTags = parameters.characterTags
                     for _, identifier in ipairs(parameters.jobs) do faction:addJob(identifier, false) end
-                    if parameters.sort then faction.sort = parameters.sort end
-                    if parameters.notifyTeammates then faction.notifyTeammates = parameters.notifyTeammates end
+                    faction.sort = parameters.sort
+                    faction.notifyTeammates = parameters.notifyTeammates
                     faction.allowRespawn = parameters.allowRespawn
                     faction.respawnIntervalMultiplier = parameters.respawnIntervalMultiplier
+
+                    do
+                        local chunk = parameters.getRespawnLimitPerTime
+                        if string.len(chunk) > 0 then
+                            local ret = dostring(chunk)
+                            if type(ret) == "function" then
+                                faction.getRespawnLimitPerTime = ret
+                            else
+                                log(("Failed to load 'getRespawnLimitPerTime' chunk for faction(%s) with an error message: %s"):format(parameters.identifier, ret), 'e')
+                            end
+                        end
+                    end
                 end
             end
         end
@@ -643,7 +655,7 @@ function m:initialize()
                     if proxyCharacter == character then
                         self._assignedJob[clientAccountId] = nil
                         self._promptedAssignJob[clientAccountId] = nil
-                        self._waitRespawn[clientAccountId] = true
+                        self._deathTime[clientAccountId] = Timer.Time
                         local client = DFC.GetClientByAccountId(clientAccountId)
                         if client and client.Character == character then
                             client.SetClientCharacter(nil)
@@ -867,7 +879,7 @@ function m:update()
                 elseif joinedFaction.allowRespawn
                     and joinedFaction.existAnyJob
                     and not self._assignedJob[clientAccountId]
-                    and not self._waitRespawn[clientAccountId]
+                    and not self._deathTime[clientAccountId]
                     and self._remainingLives[clientAccountId] > 0
                 then
                     ---@type dfc.job[]
@@ -894,7 +906,7 @@ function m:update()
                         if joinedFaction.allowRespawn
                             and joinedFaction.jobs[job.identifier]
                             and not self._assignedJob[responderAccountId]
-                            and not self._waitRespawn[responderAccountId]
+                            and not self._deathTime[responderAccountId]
                             and remainingLives > 0
                             and remainingLives >= job.liveConsumption
                             and job:participatory(joinedFaction.jobs, joinedFaction)

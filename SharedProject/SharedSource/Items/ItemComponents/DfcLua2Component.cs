@@ -6,6 +6,7 @@ using Barotrauma.Networking;
 using MoonSharp.Interpreter.Interop;
 using MoonSharp.Interpreter;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
