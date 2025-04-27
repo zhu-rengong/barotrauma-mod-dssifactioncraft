@@ -194,39 +194,7 @@ namespace DSSIFactionCraft
 
                 try
                 {
-                    if (GameMain.NetworkMember?.IsClient ?? false)
-                    {
-                        // Sandboxing
-                        // The following modules are prohibited:
-                        // LoadMethods, The load methods: "load", "loadsafe", "loadfile", "loadfilesafe", "dofile" and "require"
-                        // IO, The methods of "io" and "file" packages
-                        // OS_System, The methods of "os" package excluding those listed for OS_Time
-                        script = new Script(CoreModules.Preset_SoftSandbox | CoreModules.Debug & (~(CoreModules.LoadMethods | CoreModules.IO | CoreModules.OS_System)));
-                        script.Options.DebugPrint = (string o) => LuaCsLogger.LogMessage(o);
-                        script.Options.CheckThreadAccess = false;
-
-                        if (Path.GetDirectoryName(item.Prefab?.ContentPackage?.Path) is string packagePath)
-                        {
-                            LuaScriptLoader scriptLoader = new();
-                            scriptLoader.ModulePaths = new string[] { };
-                            script.Options.ScriptLoader = scriptLoader;
-                            script.Globals["setmodulepaths"] = (Action<string[]>)(str => scriptLoader.ModulePaths = str);
-                            script.Globals["require"] = (Func<string, Table, DynValue>)new LuaRequire(script).Require;
-                            script.Globals["LuaUserData"] = UserData.CreateStatic<LuaUserData>();
-
-                            string entryPath = Path.Combine(packagePath, "DFC/MapDevTools/Lua2Component/Sandboxing/entry.lua");
-
-                            script.LoadFile(entryPath).Function.Call(Path.GetDirectoryName(Path.GetFullPath(entryPath)));
-
-                            script.Globals.Remove("setmodulepaths");
-                            script.Globals.Remove("require");
-                            script.Globals.Remove("LuaUserData");
-                        }
-                    }
-                    else
-                    {
-                        script = GameMain.LuaCs.Lua;
-                    }
+                    script = GameMain.LuaCs.Lua;
 
                     var initialize = script.DoString($@"
 return function(_)
